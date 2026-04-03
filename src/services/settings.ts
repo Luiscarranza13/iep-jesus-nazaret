@@ -11,7 +11,7 @@ export const DEFAULT_SETTINGS = {
   address: 'Bellavista, Celendín, Cajamarca, Perú',
   phone: '',
   email: '',
-  whatsapp: '',
+  whatsapp: '51999999999',
   facebook: 'https://www.facebook.com/p/Institución-Educativa-Jesús-de-Nazaret-_-Bellavista-100085320282328/',
   instagram: '',
   youtube: '',
