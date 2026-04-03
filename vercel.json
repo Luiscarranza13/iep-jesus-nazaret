@@ -1,12 +1,1 @@
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "framework": null,
-  "rewrites": [{ "source": "/(.*)", "destination": "/api/server" }],
-  "functions": {
-    "api/server.js": {
-      "includeFiles": "dist/**"
-    }
-  }
-}
+{}
