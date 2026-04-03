@@ -1,5 +1,6 @@
 ---
 import PublicLayout from '../../layouts/PublicLayout.astro';
+import PageHero from '../../components/public/PageHero.astro';
 import NewsCard from '../../components/public/NewsCard.astro';
 import { getNews } from '../../services/content';
 
@@ -12,14 +13,11 @@ const newsToShow = news || [];
   title="Noticias – I.E. Jesús de Nazaret"
   description="Mantente informado sobre las actividades, logros y novedades de la I.E. Jesús de Nazaret en Bellavista, Celendín."
 >
-  <div class="bg-gradient-primary text-white py-14 sm:py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4">Noticias</h1>
-      <p class="text-white/80 text-base sm:text-xl max-w-2xl mx-auto">
-        Actividades, logros y novedades de nuestra comunidad educativa
-      </p>
-    </div>
-  </div>
+  <PageHero
+    title="Noticias"
+    subtitle="Actividades, logros y novedades de nuestra comunidad educativa"
+    image="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1600&q=80"
+  />
 
   <section class="py-20 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

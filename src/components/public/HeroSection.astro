@@ -12,7 +12,6 @@ const hasImage = !!settings.hero_image_url;
 <section class="relative min-h-[90vh] flex items-end overflow-hidden">
 
   {hasImage ? (
-    <!-- Imagen full, sin filtro de color -->
     <div class="absolute inset-0">
       <img
         src={settings.hero_image_url}
@@ -20,9 +19,9 @@ const hasImage = !!settings.hero_image_url;
         class="w-full h-full object-cover"
         style="object-position: center 25%;"
       />
-      <!-- Overlay solo en la franja inferior donde va el texto -->
-      <div class="absolute bottom-0 left-0 right-0 h-56"
-           style="background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);">
+      <!-- Overlay gradiente fuerte para legibilidad del texto -->
+      <div class="absolute inset-0"
+           style="background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.65) 40%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0.1) 100%);">
       </div>
     </div>
   ) : (

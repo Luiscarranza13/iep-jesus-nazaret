@@ -1,286 +1,143 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/common/Icon.astro';
-
-const modules = [
-  { icon: 'newspaper', label: 'Noticias' },
-  { icon: 'file-text', label: 'Blogs' },
-  { icon: 'image', label: 'Galerias' },
-  { icon: 'calendar-days', label: 'Eventos' },
-];
 ---
 
-<BaseLayout title="Iniciar sesion - Admin I.E. Jesus de Nazaret" noIndex={true}>
-  <section class="relative min-h-screen overflow-hidden bg-slate-100">
-    <div
-      class="absolute inset-0"
-      style="background:
-        radial-gradient(circle at top left, rgba(109,40,217,0.14), transparent 26%),
-        radial-gradient(circle at bottom right, rgba(59,130,246,0.16), transparent 24%),
-        linear-gradient(180deg, #f8fafc 0%, #eef2ff 44%, #f8fafc 100%);"
-    ></div>
-    <div class="absolute inset-0 opacity-[0.45]" style="background-image:linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px); background-size:32px 32px;"></div>
+<BaseLayout title="Iniciar sesión – Admin I.E. Jesús de Nazaret" noIndex={true}>
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 px-4 py-8">
 
-    <div class="relative mx-auto flex min-h-screen max-w-6xl items-center px-4 py-8 sm:px-6 lg:px-8">
-      <div class="grid w-full overflow-hidden rounded-[2rem] border border-white/70 bg-white/70 shadow-[0_30px_120px_rgba(15,23,42,0.16)] backdrop-blur-xl lg:grid-cols-[1.02fr_0.98fr]">
-        <div class="order-2 relative hidden overflow-hidden bg-[linear-gradient(160deg,#0f172a_0%,#312e81_52%,#5b21b6_100%)] p-6 text-white sm:p-8 lg:order-1 lg:block lg:p-10">
-          <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.14),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.1),transparent_24%)]"></div>
-          <div class="absolute -right-10 top-10 h-28 w-28 rounded-full border border-white/10 bg-white/6"></div>
-          <div class="absolute bottom-6 left-6 h-20 w-20 rounded-full border border-white/10 bg-white/6 blur-[1px]"></div>
+    <!-- Fondo decorativo -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-600/15 rounded-full blur-3xl"></div>
+    </div>
 
-          <div class="relative flex h-full flex-col justify-between gap-8">
-            <div class="space-y-6">
-              <div class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/85">
-                <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-                Panel institucional
-              </div>
+    <div class="relative w-full max-w-md">
+      <!-- Card principal -->
+      <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
 
-              <div class="flex items-center gap-4">
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-xl font-black tracking-[0.18em] text-white shadow-[0_14px_30px_rgba(15,23,42,0.24)]">
-                  JN
-                </div>
-                <div>
-                  <p class="text-xs font-semibold uppercase tracking-[0.32em] text-white/55">IE Jesus de Nazaret</p>
-                  <p class="mt-1 text-2xl font-bold text-white">Bellavista</p>
-                  <p class="text-sm text-white/68">Celendin · Cajamarca</p>
-                </div>
-              </div>
-
-              <div class="max-w-lg space-y-4">
-                <h1 class="font-heading text-3xl font-bold leading-tight sm:text-4xl lg:text-[3.15rem] lg:leading-[1.02]">
-                  Acceso privado para gestionar el sitio con claridad.
-                </h1>
-                <p class="max-w-md text-sm leading-7 text-white/72 sm:text-base">
-                  Administra contenido, imagen institucional y comunicados desde un panel disenado para trabajo rapido y ordenado.
-                </p>
-              </div>
-            </div>
-
-            <div class="space-y-4">
-              <div class="rounded-[1.75rem] border border-white/12 bg-white/10 p-5 backdrop-blur-sm">
-                <div class="mb-4 flex items-center justify-between gap-4">
-                  <div>
-                    <p class="text-sm font-semibold text-white">Acceso seguro</p>
-                    <p class="text-sm text-white/62">Solo para administradores y editores</p>
-                  </div>
-                  <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/12 text-white">
-                    <Icon name="shield" class="h-5 w-5" />
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                  {modules.map((item) => (
-                    <div class="rounded-2xl border border-white/10 bg-white/8 px-4 py-3">
-                      <div class="mb-2 flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-white/85">
-                        <Icon name={item.icon} class="h-4 w-4" />
-                      </div>
-                      <p class="text-sm font-medium text-white/82">{item.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div class="grid gap-3 sm:grid-cols-2">
-                <div class="rounded-2xl border border-white/12 bg-white/8 px-4 py-4">
-                  <p class="text-[11px] uppercase tracking-[0.22em] text-white/50">Sesion</p>
-                  <p class="mt-2 text-lg font-semibold text-white">Protegida</p>
-                </div>
-                <div class="rounded-2xl border border-white/12 bg-white/8 px-4 py-4">
-                  <p class="text-[11px] uppercase tracking-[0.22em] text-white/50">Flujo</p>
-                  <p class="mt-2 text-lg font-semibold text-white">Centralizado</p>
-                </div>
-              </div>
-            </div>
+        <!-- Header morado -->
+        <div class="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-8 py-8 text-white text-center">
+          <div class="w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl font-black tracking-wider">
+            JN
           </div>
+          <h1 class="font-heading font-bold text-2xl mb-1">Panel Administrativo</h1>
+          <p class="text-purple-200 text-sm">I.E. Jesús de Nazaret · Bellavista</p>
         </div>
 
-        <div class="order-1 flex items-center bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.98))] p-5 sm:p-8 lg:order-2 lg:p-10">
-          <div class="mx-auto w-full max-w-md">
-            <div class="mb-8 space-y-5">
-              <div class="flex items-center justify-between gap-4">
-                <div class="inline-flex items-center gap-2 rounded-full bg-primary-50 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-700">
-                  <Icon name="lock" class="h-3.5 w-3.5" />
-                  Inicio de sesion
-                </div>
-                <div class="hidden rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 sm:block">
-                  Acceso verificado
-                </div>
-              </div>
-
-              <div class="space-y-2">
-                <h2 class="font-heading text-3xl font-bold text-slate-950 sm:text-4xl">Bienvenido</h2>
-                <p class="max-w-sm text-sm leading-6 text-slate-500 sm:text-base">
-                  Ingresa con tu cuenta para continuar al panel administrativo.
-                </p>
-              </div>
-            </div>
-
-            <form id="login-form" class="space-y-5">
-              <div class="animate-fade-in-up">
-                <label class="label" for="email">Correo electronico</label>
-                <div class="group relative">
-                  <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-primary-600">
-                    <Icon name="mail" class="h-4.5 w-4.5" />
-                  </span>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    class="input rounded-2xl border-slate-200 bg-white py-3.5 pl-11 pr-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]"
-                    placeholder="admin@ie.edu.pe"
-                    autocomplete="email"
-                  />
-                </div>
-              </div>
-
-              <div class="animate-fade-in-up delay-100">
-                <label class="label" for="password">Contrasena</label>
-                <div class="group relative">
-                  <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-primary-600">
-                    <Icon name="lock" class="h-4.5 w-4.5" />
-                  </span>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    required
-                    class="input rounded-2xl border-slate-200 bg-white py-3.5 pl-11 pr-12 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]"
-                    placeholder="Ingresa tu contrasena"
-                    autocomplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    id="toggle-password"
-                    class="absolute right-3 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-xl p-2 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-700"
-                    aria-label="Mostrar u ocultar contrasena"
-                    aria-pressed="false"
-                  >
-                    <span id="password-visible-icon">
-                      <Icon name="eye" class="h-4.5 w-4.5" />
-                    </span>
-                    <span id="password-hidden-icon" class="hidden">
-                      <Icon name="eye-off" class="h-4.5 w-4.5" />
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              <div
-                id="error-msg"
-                class="hidden rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 animate-fade-in-up"
-                role="alert"
-              >
-                <div class="flex items-start gap-2.5">
-                  <Icon name="alert-circle" class="mt-0.5 h-4 w-4 flex-shrink-0" />
-                  <p id="error-text">No se pudo iniciar sesion. Verifica tus credenciales.</p>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                id="submit-btn"
-                class="btn-primary w-full justify-center rounded-2xl py-3.5 text-sm shadow-[0_20px_45px_rgba(109,40,217,0.28)] animate-fade-in-up delay-200"
-              >
-                <span id="btn-text" class="flex items-center gap-2">
-                  <Icon name="log-in" class="h-4 w-4" />
-                  Iniciar sesion
-                </span>
-                <span id="btn-loading" class="hidden flex items-center gap-2">
-                  <span class="spinner h-4 w-4"></span>
-                  Verificando...
-                </span>
-              </button>
-            </form>
-
-            <div class="mt-6 rounded-[1.6rem] border border-slate-200 bg-slate-50 px-4 py-4">
-              <div class="flex items-start gap-3">
-                <div class="mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white">
-                  <Icon name="shield" class="h-4 w-4" />
-                </div>
-                <div>
-                  <p class="text-sm font-semibold text-slate-900">Acceso solo para personal autorizado</p>
-                  <p class="mt-1 text-sm leading-6 text-slate-500">
-                    Si no cuentas con permisos, solicita acceso al responsable del sistema.
-                  </p>
-                </div>
-              </div>
-            </div>
+        <!-- Formulario -->
+        <div class="px-8 py-8">
+          <div class="mb-6">
+            <h2 class="font-heading font-bold text-2xl text-gray-900">Bienvenido</h2>
+            <p class="text-gray-500 text-sm mt-1">Ingresa tus credenciales para continuar</p>
           </div>
+
+          <form id="login-form" class="space-y-5">
+            <div>
+              <label class="label" for="email">Correo electrónico</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Icon name="mail" class="w-4 h-4" />
+                </span>
+                <input
+                  type="email" id="email" name="email" required
+                  class="input pl-10"
+                  placeholder="admin@ie.edu.pe"
+                  autocomplete="email"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="label" for="password">Contraseña</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Icon name="lock" class="w-4 h-4" />
+                </span>
+                <input
+                  type="password" id="password" name="password" required
+                  class="input pl-10 pr-12"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                />
+                <button type="button" id="toggle-password"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 rounded-lg transition-colors">
+                  <Icon name="eye" class="w-4 h-4" id="icon-eye" />
+                  <Icon name="eye-off" class="w-4 h-4 hidden" id="icon-eye-off" />
+                </button>
+              </div>
+            </div>
+
+            <div id="error-msg" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
+              <Icon name="alert-circle" class="w-4 h-4 flex-shrink-0" />
+              <span id="error-text">Credenciales incorrectas. Verifica e intenta de nuevo.</span>
+            </div>
+
+            <button type="submit" id="submit-btn"
+              class="btn-primary w-full justify-center py-3.5 text-base shadow-lg shadow-purple-500/30">
+              <span id="btn-text" class="flex items-center gap-2">
+                <Icon name="log-in" class="w-4 h-4" />
+                Iniciar sesión
+              </span>
+              <span id="btn-loading" class="hidden flex items-center gap-2">
+                <span class="spinner w-4 h-4"></span>
+                Verificando...
+              </span>
+            </button>
+          </form>
+
+          <p class="text-center text-xs text-gray-400 mt-6 flex items-center justify-center gap-1.5">
+            <Icon name="shield" class="w-3.5 h-3.5" />
+            Acceso solo para personal autorizado
+          </p>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </BaseLayout>
 
 <script>
   import { signIn } from '../../lib/auth';
 
-  const form = document.getElementById('login-form') as HTMLFormElement | null;
-  const emailEl = document.getElementById('email') as HTMLInputElement | null;
-  const passwordEl = document.getElementById('password') as HTMLInputElement | null;
-  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
-  const btnText = document.getElementById('btn-text');
+  const form       = document.getElementById('login-form') as HTMLFormElement;
+  const emailEl    = document.getElementById('email') as HTMLInputElement;
+  const passwordEl = document.getElementById('password') as HTMLInputElement;
+  const submitBtn  = document.getElementById('submit-btn') as HTMLButtonElement;
+  const btnText    = document.getElementById('btn-text');
   const btnLoading = document.getElementById('btn-loading');
-  const errorMsg = document.getElementById('error-msg');
-  const errorText = document.getElementById('error-text');
-  const toggleBtn = document.getElementById('toggle-password') as HTMLButtonElement | null;
-  const passwordVisibleIcon = document.getElementById('password-visible-icon');
-  const passwordHiddenIcon = document.getElementById('password-hidden-icon');
+  const errorMsg   = document.getElementById('error-msg');
+  const errorText  = document.getElementById('error-text');
+  const toggleBtn  = document.getElementById('toggle-password');
+  const iconEye    = document.getElementById('icon-eye');
+  const iconEyeOff = document.getElementById('icon-eye-off');
 
-  requestAnimationFrame(() => emailEl?.focus());
-
-  function showError(message: string) {
-    if (errorText) {
-      errorText.textContent = message;
-    }
-
-    errorMsg?.classList.remove('hidden');
-  }
-
-  function clearError() {
-    errorMsg?.classList.add('hidden');
-  }
-
-  function setLoadingState(isLoading: boolean) {
-    submitBtn?.toggleAttribute('disabled', isLoading);
-    submitBtn?.classList.toggle('opacity-80', isLoading);
-    submitBtn?.classList.toggle('cursor-not-allowed', isLoading);
-    btnText?.classList.toggle('hidden', isLoading);
-    btnLoading?.classList.toggle('hidden', !isLoading);
-  }
+  emailEl?.focus();
 
   toggleBtn?.addEventListener('click', () => {
-    if (!passwordEl) return;
-
-    const isPassword = passwordEl.type === 'password';
-    passwordEl.type = isPassword ? 'text' : 'password';
-    toggleBtn.setAttribute('aria-pressed', String(isPassword));
-    passwordVisibleIcon?.classList.toggle('hidden', isPassword);
-    passwordHiddenIcon?.classList.toggle('hidden', !isPassword);
+    const isPass = passwordEl.type === 'password';
+    passwordEl.type = isPass ? 'text' : 'password';
+    iconEye?.classList.toggle('hidden', isPass);
+    iconEyeOff?.classList.toggle('hidden', !isPass);
   });
 
-  emailEl?.addEventListener('input', clearError);
-  passwordEl?.addEventListener('input', clearError);
+  function setLoading(v: boolean) {
+    submitBtn.disabled = v;
+    btnText?.classList.toggle('hidden', v);
+    btnLoading?.classList.toggle('hidden', !v);
+  }
 
-  form?.addEventListener('submit', async event => {
-    event.preventDefault();
-    clearError();
-    setLoadingState(true);
-
-    const email = emailEl?.value.trim() || '';
-    const password = passwordEl?.value || '';
-
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg?.classList.add('hidden');
+    setLoading(true);
     try {
-      await signIn(email, password);
+      await signIn(emailEl.value.trim(), passwordEl.value);
       window.location.href = '/admin';
-    } catch (error: any) {
-      const message = typeof error?.message === 'string' && error.message.trim()
-        ? error.message
-        : 'No se pudo iniciar sesion. Verifica tus credenciales.';
-      showError(message);
+    } catch (err: any) {
+      if (errorText) errorText.textContent = err?.message || 'Credenciales incorrectas.';
+      errorMsg?.classList.remove('hidden');
     } finally {
-      setLoadingState(false);
+      setLoading(false);
     }
   });
 </script>

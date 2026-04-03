@@ -1,0 +1,50 @@
+---
+interface Props {
+  title: string;
+  subtitle?: string;
+  image?: string;
+  centered?: boolean;
+}
+
+const {
+  title,
+  subtitle,
+  image = 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1600&q=80',
+  centered = true,
+} = Astro.props;
+---
+
+<div class="relative overflow-hidden text-white py-16 sm:py-24">
+  <!-- Imagen de fondo -->
+  <div class="absolute inset-0">
+    <img src={image} alt="" class="w-full h-full object-cover" loading="eager" />
+    <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(79,20,180,0.82) 0%, rgba(109,40,217,0.75) 50%, rgba(162,28,175,0.70) 100%);"></div>
+  </div>
+
+  <!-- Patrón sutil -->
+  <div class="absolute inset-0 opacity-10">
+    <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="ph-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#ph-grid)" />
+    </svg>
+  </div>
+
+  <!-- Contenido -->
+  <div class={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${centered ? 'text-center' : ''}`}>
+    <slot name="badge" />
+    <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3 drop-shadow-md">{title}</h1>
+    {subtitle && <p class="text-white/85 text-base sm:text-xl max-w-2xl mx-auto leading-relaxed">{subtitle}</p>}
+    <slot />
+  </div>
+
+  <!-- Ola inferior -->
+  <div class="absolute bottom-0 left-0 right-0 pointer-events-none">
+    <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0 40L1440 40L1440 20C1200 40 960 0 720 20C480 40 240 0 0 20L0 40Z" fill="white"/>
+    </svg>
+  </div>
+</div>

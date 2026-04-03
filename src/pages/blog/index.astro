@@ -1,5 +1,6 @@
 ---
 import PublicLayout from '../../layouts/PublicLayout.astro';
+import PageHero from '../../components/public/PageHero.astro';
 import NewsCard from '../../components/public/NewsCard.astro';
 import { getBlogs } from '../../services/content';
 
@@ -12,14 +13,11 @@ const blogsToShow = blogs || [];
   title="Blog Educativo – I.E. Jesús de Nazaret"
   description="Artículos, reflexiones y recursos educativos de la I.E. Jesús de Nazaret para estudiantes, padres de familia y docentes."
 >
-  <div class="bg-gradient-primary text-white py-14 sm:py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4">Blog Educativo</h1>
-      <p class="text-white/80 text-base sm:text-xl max-w-2xl mx-auto">
-        Artículos y reflexiones para nuestra comunidad educativa
-      </p>
-    </div>
-  </div>
+  <PageHero
+    title="Blog Educativo"
+    subtitle="Artículos y reflexiones para nuestra comunidad educativa"
+    image="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1600&q=80"
+  />
 
   <section class="py-20 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

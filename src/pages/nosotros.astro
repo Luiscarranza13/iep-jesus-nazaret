@@ -1,5 +1,6 @@
 ---
 import PublicLayout from '../layouts/PublicLayout.astro';
+import PageHero from '../components/public/PageHero.astro';
 import SectionHeader from '../components/public/SectionHeader.astro';
 import { getSettings } from '../services/settings';
 
@@ -11,14 +12,11 @@ const settings = await getSettings();
   description="Conoce la historia, misión, visión y valores de la I.E. Jesús de Nazaret, institución educativa secundaria pública en Bellavista, Celendín, Cajamarca."
 >
   <!-- Encabezado -->
-  <div class="bg-gradient-primary text-white py-14 sm:py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4">Nosotros</h1>
-      <p class="text-white/80 text-base sm:text-xl max-w-2xl mx-auto">
-        Conoce nuestra historia, identidad y el compromiso que nos une como comunidad educativa
-      </p>
-    </div>
-  </div>
+  <PageHero
+    title="Nosotros"
+    subtitle="Conoce nuestra historia, identidad y el compromiso que nos une como comunidad educativa"
+    image="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1600&q=80"
+  />
 
   <!-- Ficha institucional rápida -->
   <section class="py-10 bg-white border-b border-gray-100">

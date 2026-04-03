@@ -1,5 +1,6 @@
 ---
 import PublicLayout from '../../layouts/PublicLayout.astro';
+import PageHero from '../../components/public/PageHero.astro';
 import { getAllEvents } from '../../services/content';
 import { formatDate } from '../../utils/helpers';
 
@@ -15,14 +16,11 @@ const past = eventsToShow.filter((e: any) => e.event_date < today);
   title="Eventos y Actividades – I.E. Jesús de Nazaret"
   description="Calendario de actividades, eventos y fechas importantes de la I.E. Jesús de Nazaret en Bellavista, Celendín."
 >
-  <div class="bg-gradient-primary text-white py-14 sm:py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4">Eventos y Actividades</h1>
-      <p class="text-white/80 text-base sm:text-xl max-w-2xl mx-auto">
-        Calendario escolar y actividades de nuestra institución
-      </p>
-    </div>
-  </div>
+  <PageHero
+    title="Eventos y Actividades"
+    subtitle="Calendario escolar y actividades de nuestra institución"
+    image="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80"
+  />
 
   <section class="py-20 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
