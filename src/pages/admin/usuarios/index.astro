@@ -10,27 +10,23 @@ const { data: profiles } = await supabase
 
 const users = profiles || [];
 
-const roleLabel: Record<string, { label: string; color: string }> = {
+const roleConfig: Record<string, { label: string; color: string }> = {
   admin:  { label: 'Administrador', color: 'bg-purple-100 text-purple-800' },
   editor: { label: 'Editor',        color: 'bg-blue-100 text-blue-800' },
-  viewer: { label: 'Visor',         color: 'bg-gray-100 text-gray-700' },
+  viewer: { label: 'Visor',         color: 'bg-gray-100 text-gray-600' },
 };
 ---
 
 <AdminLayout title="Usuarios" activeSection="usuarios">
-  <div class="max-w-4xl mx-auto">
+  <div class="max-w-5xl mx-auto">
+
     <div class="flex items-center justify-between mb-6 animate-fade-in-down">
       <div>
         <h2 class="font-heading font-bold text-xl text-gray-900">Usuarios del sistema</h2>
         <p class="text-sm text-gray-500 mt-0.5">{users.length} usuario{users.length !== 1 ? 's' : ''} registrado{users.length !== 1 ? 's' : ''}</p>
       </div>
-      <button id="invite-btn" class="btn-primary gap-2 text-sm">
-        <Icon name="user-plus" class="w-4 h-4" />
-        Invitar usuario
-      </button>
     </div>
 
-    <!-- Tabla de usuarios -->
     <div class="card-admin overflow-hidden animate-fade-in-up">
       {users.length === 0 ? (
         <div class="text-center py-16 text-gray-400">
@@ -38,75 +34,136 @@ const roleLabel: Record<string, { label: string; color: string }> = {
           <p class="font-medium">No hay usuarios registrados</p>
         </div>
       ) : (
-        <table class="admin-table w-full">
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Correo</th>
-              <th>Rol</th>
-              <th>Registrado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u: any) => {
-              const role = roleLabel[u.role] ?? roleLabel.viewer;
-              const initials = (u.full_name || u.email || '?').slice(0, 2).toUpperCase();
-              const date = u.created_at ? new Date(u.created_at).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-              return (
-                <tr>
-                  <td>
-                    <div class="flex items-center gap-3">
-                      <div class="w-9 h-9 bg-gradient-primary rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                        {u.avatar_url ? (
-                          <img src={u.avatar_url} alt={initials} class="w-full h-full object-cover rounded-xl" />
-                        ) : initials}
+        <div class="overflow-x-auto">
+          <table class="admin-table w-full">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Registrado</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u: any) => {
+                const role = roleConfig[u.role] ?? roleConfig.viewer;
+                const initials = (u.full_name || u.email || '?').slice(0, 2).toUpperCase();
+                const date = u.created_at
+                  ? new Date(u.created_at).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })
+                  : '—';
+                return (
+                  <tr data-id={u.id}>
+                    <td>
+                      <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 bg-gradient-primary rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
+                          {u.avatar_url
+                            ? <img src={u.avatar_url} alt={initials} class="w-full h-full object-cover" />
+                            : initials
+                          }
+                        </div>
+                        <span class="font-medium text-gray-900">{u.full_name || <span class="text-gray-400 italic">Sin nombre</span>}</span>
                       </div>
-                      <span class="font-medium text-gray-900">{u.full_name || '—'}</span>
-                    </div>
-                  </td>
-                  <td class="text-gray-500">{u.email || '—'}</td>
-                  <td>
-                    <span class={`badge text-xs ${role.color}`}>{role.label}</span>
-                  </td>
-                  <td class="text-gray-500 text-xs">{date}</td>
-                  <td>
-                    <div class="flex items-center gap-2">
-                      <button
-                        class="edit-role-btn p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                        data-id={u.id}
-                        data-role={u.role}
-                        data-name={u.full_name || u.email}
-                        title="Cambiar rol"
-                      >
-                        <Icon name="shield" class="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td class="text-gray-500 text-sm">{u.email || '—'}</td>
+                    <td>
+                      <span class={`badge text-xs ${role.color}`}>{role.label}</span>
+                    </td>
+                    <td class="text-gray-400 text-xs">{date}</td>
+                    <td>
+                      <div class="flex items-center justify-end gap-1">
+                        <button
+                          class="edit-btn p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                          data-id={u.id}
+                          data-name={u.full_name || ''}
+                          data-email={u.email || ''}
+                          data-role={u.role}
+                          title="Editar usuario"
+                        >
+                          <Icon name="pencil" class="w-4 h-4" />
+                        </button>
+                        <button
+                          class="delete-btn p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          data-id={u.id}
+                          data-name={u.full_name || u.email || 'este usuario'}
+                          title="Eliminar usuario"
+                        >
+                          <Icon name="trash-2" class="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
 
-    <!-- Info -->
-    <div class="mt-6 card-admin p-4 bg-blue-50 border border-blue-100 animate-fade-in-up delay-100">
-      <div class="flex gap-3">
-        <Icon name="info" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+    <!-- Info roles -->
+    <div class="mt-5 card-admin p-4 bg-blue-50 border border-blue-100 animate-fade-in-up delay-100">
+      <div class="flex gap-3 items-start">
+        <Icon name="info" class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
         <div class="text-sm text-blue-800">
-          <p class="font-semibold mb-1">Roles del sistema</p>
-          <ul class="space-y-1 text-blue-700">
-            <li><span class="font-medium">Administrador</span> — acceso total al panel</li>
-            <li><span class="font-medium">Editor</span> — puede crear y editar contenido</li>
-            <li><span class="font-medium">Visor</span> — solo lectura</li>
-          </ul>
+          <span class="font-semibold">Roles: </span>
+          <span class="font-medium">Administrador</span> — acceso total ·
+          <span class="font-medium">Editor</span> — crea y edita contenido ·
+          <span class="font-medium">Visor</span> — solo lectura
         </div>
       </div>
     </div>
   </div>
 </AdminLayout>
+
+<!-- Modal de edición -->
+<div id="edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="modal-backdrop"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-scale-in">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-heading font-bold text-lg text-gray-900">Editar usuario</h3>
+      <button id="modal-close" class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+        <Icon name="x" class="w-5 h-5" />
+      </button>
+    </div>
+
+    <form id="edit-form" class="space-y-4">
+      <input type="hidden" id="edit-id" />
+
+      <div>
+        <label class="label" for="edit-name">Nombre completo</label>
+        <input type="text" id="edit-name" class="input" placeholder="Nombre del usuario" />
+      </div>
+
+      <div>
+        <label class="label" for="edit-email">Correo electrónico</label>
+        <input type="email" id="edit-email" class="input bg-gray-50" readonly />
+        <p class="text-xs text-gray-400 mt-1">El correo no se puede cambiar desde aquí</p>
+      </div>
+
+      <div>
+        <label class="label" for="edit-role">Rol</label>
+        <select id="edit-role" class="input">
+          <option value="admin">Administrador</option>
+          <option value="editor">Editor</option>
+          <option value="viewer">Visor</option>
+        </select>
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="button" id="modal-cancel"
+          class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm">
+          Cancelar
+        </button>
+        <button type="submit"
+          class="flex-1 btn-primary justify-center py-2.5 text-sm">
+          <Icon name="save" class="w-4 h-4" />
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
   import { getSession } from '../../../lib/auth';
@@ -114,63 +171,84 @@ const roleLabel: Record<string, { label: string; color: string }> = {
 
   getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
 
-  // Cambiar rol
-  document.querySelectorAll('.edit-role-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id   = (btn as HTMLElement).dataset.id!;
-      const name = (btn as HTMLElement).dataset.name!;
-      const currentRole = (btn as HTMLElement).dataset.role!;
+  const modal        = document.getElementById('edit-modal')!;
+  const backdrop     = document.getElementById('modal-backdrop')!;
+  const modalClose   = document.getElementById('modal-close')!;
+  const modalCancel  = document.getElementById('modal-cancel')!;
+  const editForm     = document.getElementById('edit-form') as HTMLFormElement;
+  const editId       = document.getElementById('edit-id') as HTMLInputElement;
+  const editName     = document.getElementById('edit-name') as HTMLInputElement;
+  const editEmail    = document.getElementById('edit-email') as HTMLInputElement;
+  const editRole     = document.getElementById('edit-role') as HTMLSelectElement;
 
-      const { value: newRole } = await (window as any).Swal?.fire({
-        title: `Cambiar rol de ${name}`,
-        input: 'select',
-        inputOptions: { admin: 'Administrador', editor: 'Editor', viewer: 'Visor' },
-        inputValue: currentRole,
-        showCancelButton: true,
-        confirmButtonText: 'Guardar',
-        cancelButtonText: 'Cancelar',
-        customClass: { confirmButton: 'swal2-confirm', cancelButton: 'swal2-cancel' },
-        buttonsStyling: false,
-      }) ?? {};
+  function openModal() {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+  function closeModal() {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
 
-      if (!newRole || newRole === currentRole) return;
+  backdrop.addEventListener('click', closeModal);
+  modalClose.addEventListener('click', closeModal);
+  modalCancel.addEventListener('click', closeModal);
 
-      (window as any).showLoading('Actualizando rol...');
-      const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', id);
-      (window as any).closeLoading();
-
-      if (error) {
-        (window as any).showError('Error', error.message);
-      } else {
-        (window as any).showToast('Rol actualizado correctamente', 'success');
-        setTimeout(() => location.reload(), 1000);
-      }
+  // Abrir modal de edición
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const el = btn as HTMLElement;
+      editId.value    = el.dataset.id!;
+      editName.value  = el.dataset.name!;
+      editEmail.value = el.dataset.email!;
+      editRole.value  = el.dataset.role!;
+      openModal();
     });
   });
 
-  // Invitar usuario (abre Supabase Auth)
-  document.getElementById('invite-btn')?.addEventListener('click', async () => {
-    const { value: email } = await (window as any).Swal?.fire({
-      title: 'Invitar usuario',
-      input: 'email',
-      inputPlaceholder: 'correo@ejemplo.com',
-      showCancelButton: true,
-      confirmButtonText: 'Enviar invitación',
-      cancelButtonText: 'Cancelar',
-      customClass: { confirmButton: 'swal2-confirm', cancelButton: 'swal2-cancel' },
-      buttonsStyling: false,
-    }) ?? {};
+  // Guardar cambios
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id   = editId.value;
+    const name = editName.value.trim();
+    const role = editRole.value;
 
-    if (!email) return;
-
-    (window as any).showLoading('Enviando invitación...');
-    const { error } = await supabase.auth.admin?.inviteUserByEmail?.(email) ?? { error: { message: 'No disponible desde el cliente' } };
+    (window as any).showLoading('Guardando...');
+    const { error } = await supabase
+      .from('profiles')
+      .update({ full_name: name || null, role })
+      .eq('id', id);
     (window as any).closeLoading();
 
     if (error) {
-      (window as any).showError('No se pudo invitar', 'Los usuarios deben registrarse directamente en Supabase Auth o desde el dashboard de Supabase.');
+      (window as any).showError('Error al guardar', error.message);
     } else {
-      (window as any).showToast('Invitación enviada', 'success');
+      closeModal();
+      (window as any).showToast('Usuario actualizado correctamente', 'success');
+      setTimeout(() => location.reload(), 900);
     }
+  });
+
+  // Eliminar usuario
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el   = btn as HTMLElement;
+      const id   = el.dataset.id!;
+      const name = el.dataset.name!;
+
+      const ok = await (window as any).confirmDelete(name, 'Se eliminará el perfil. El usuario de autenticación permanecerá en Supabase.');
+      if (!ok) return;
+
+      (window as any).showLoading('Eliminando...');
+      const { error } = await supabase.from('profiles').delete().eq('id', id);
+      (window as any).closeLoading();
+
+      if (error) {
+        (window as any).showError('Error al eliminar', error.message);
+      } else {
+        (window as any).showToast('Usuario eliminado', 'success');
+        document.querySelector(`tr[data-id="${id}"]`)?.remove();
+      }
+    });
   });
 </script>
