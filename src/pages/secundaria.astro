@@ -1,5 +1,6 @@
 ---
 import PublicLayout from '../layouts/PublicLayout.astro';
+import PageHero from '../components/public/PageHero.astro';
 import Icon from '../components/common/Icon.astro';
 import { getSettings } from '../services/settings';
 
@@ -34,15 +35,11 @@ const enfoques = [
   title="Educación Secundaria – I.E. Jesús de Nazaret"
   description="Conoce la oferta educativa de nivel secundaria de la I.E. Jesús de Nazaret en Bellavista, Celendín."
 >
-  <!-- Hero -->
-  <div class="bg-gradient-primary text-white py-14 sm:py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3">Educación Secundaria</h1>
-      <p class="text-white/80 text-base sm:text-xl max-w-2xl mx-auto">
-        Formación integral para jóvenes de 12 a 17 años en Bellavista, Celendín
-      </p>
-    </div>
-  </div>
+  <PageHero
+    title="Educación Secundaria"
+    subtitle="Formación integral para jóvenes de 12 a 17 años en Bellavista, Celendín"
+    image="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1600&q=80"
+  />
 
   <!-- Descripción general -->
   <section class="py-14 sm:py-20 bg-white">

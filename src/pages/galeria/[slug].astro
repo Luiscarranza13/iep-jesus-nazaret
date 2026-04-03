@@ -16,13 +16,12 @@ const photos = (gallery as any).photos ?? [];
   description={gallery.description || `Galería fotográfica: ${gallery.title}`}
   image={gallery.cover_image_url || undefined}
 >
-  <div class="bg-gradient-primary text-white py-14 sm:py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3">{gallery.title}</h1>
-      {gallery.description && <p class="text-white/80 text-lg max-w-2xl">{gallery.description}</p>}
-      <p class="text-white/60 text-sm mt-3">{photos.length} foto{photos.length !== 1 ? 's' : ''}</p>
-    </div>
-  </div>
+  <PageHero
+    title={gallery.title}
+    subtitle={gallery.description || `${photos.length} foto${photos.length !== 1 ? 's' : ''}`}
+    image={gallery.cover_image_url || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&q=80'}
+    centered={false}
+  />
 
   <section class="py-12 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
