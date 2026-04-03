@@ -71,7 +71,8 @@ const { title } = Astro.props;
 
     const name  = profile?.full_name || user.email?.split('@')[0] || 'Admin';
     const email = profile?.email || user.email || '';
-    const role  = profile?.role === 'admin' ? 'Administrador' : profile?.role === 'editor' ? 'Editor' : 'Visor';
+    const roleMap: Record<string, string> = { admin: 'Administrador', editor: 'Editor', viewer: 'Visor' };
+    const role  = roleMap[profile?.role ?? ''] ?? 'Administrador';
     const avatar = profile?.avatar_url;
 
     const nameEl   = document.getElementById('user-name');

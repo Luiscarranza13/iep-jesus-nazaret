@@ -265,22 +265,20 @@ const roleConfig: Record<string, { label: string; color: string }> = {
     const file = avatarFile.files?.[0];
 
     if (file) {
-      // Subir a blog-images (bucket con políticas permisivas)
-      const ext  = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      // Subir via API con service role para evitar problemas de RLS
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('userId', id);
 
-      const { error: upErr } = await supabase.storage
-        .from('blog-images')
-        .upload(path, file, { upsert: false, contentType: file.type });
+      const upRes = await fetch('/api/admin/upload-avatar', { method: 'POST', body: fd });
+      const upData = await upRes.json();
 
-      if (upErr) {
+      if (!upRes.ok) {
         (window as any).closeLoading();
-        (window as any).showError('Error al subir foto', upErr.message);
+        (window as any).showError('Error al subir foto', upData.error);
         return;
       }
-
-      const { data: { publicUrl } } = supabase.storage.from('blog-images').getPublicUrl(path);
-      avatarUrl = publicUrl;
+      avatarUrl = upData.publicUrl;
     }
 
     const { error } = await supabase
