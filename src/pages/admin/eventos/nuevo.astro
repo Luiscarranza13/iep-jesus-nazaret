@@ -1,0 +1,101 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import ImageUploader from '../../../components/admin/ImageUploader.astro';
+---
+
+<AdminLayout title="Nuevo Evento" activeSection="eventos">
+  <div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-3 mb-6 animate-fade-in-down">
+      <a href="/admin/eventos" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+        <Icon name="arrow-left" class="w-5 h-5" />
+      </a>
+      <h2 class="font-heading font-bold text-xl text-gray-900">Nuevo Evento</h2>
+    </div>
+
+    <div class="card-admin p-6 space-y-5 animate-fade-in-up">
+      <div>
+        <label class="label" for="title">Título *</label>
+        <input type="text" id="title" class="input" placeholder="Nombre del evento" />
+      </div>
+      <div>
+        <label class="label" for="slug">Slug</label>
+        <input type="text" id="slug" class="input font-mono text-sm" placeholder="nombre-del-evento" />
+      </div>
+      <div>
+        <label class="label" for="description">Descripción</label>
+        <textarea id="description" rows="4" class="input resize-none" placeholder="Descripción del evento..."></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="label" for="event_date">Fecha *</label>
+          <input type="date" id="event_date" class="input" />
+        </div>
+        <div>
+          <label class="label" for="event_time">Hora</label>
+          <input type="time" id="event_time" class="input" />
+        </div>
+      </div>
+      <div>
+        <label class="label" for="location">Lugar</label>
+        <input type="text" id="location" class="input" placeholder="Auditorio, patio central, etc." />
+      </div>
+      <ImageUploader fieldId="image_url" bucket="blog-images" label="Imagen del evento" />
+      <ImageUploader fieldId="video_url" bucket="blog-images" label="Video del evento" accept="video/*" urlMode="video" showAiGen={false} />
+      <div>
+        <label class="label" for="status">Estado</label>
+        <select id="status" class="input">
+          <option value="upcoming">Próximo</option>
+          <option value="past">Realizado</option>
+          <option value="cancelled">Cancelado</option>
+        </select>
+      </div>
+      <button id="save-btn" class="btn-primary w-full justify-center py-3 gap-2">
+        <Icon name="calendar-plus" class="w-4 h-4" />
+        Guardar evento
+      </button>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { getSession } from '../../../lib/auth';
+  import { upsertEvent } from '../../../services/content';
+  import { slugify } from '../../../utils/helpers';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  const titleEl = document.getElementById('title') as HTMLInputElement;
+  const slugEl  = document.getElementById('slug')  as HTMLInputElement;
+  titleEl?.addEventListener('input', () => {
+    if (!slugEl.dataset.manual) slugEl.value = slugify(titleEl.value);
+  });
+  slugEl?.addEventListener('input', () => { slugEl.dataset.manual = 'true'; });
+
+  const get = (id: string) => (document.getElementById(id) as any)?.value;
+
+  document.getElementById('save-btn')?.addEventListener('click', async () => {
+    const title = get('title'); const slug = get('slug'); const date = get('event_date');
+    if (!title || !slug || !date) { (window as any).showToast('Título, slug y fecha son requeridos', 'error'); return; }
+    (window as any).showLoading('Guardando evento...');
+    try {
+      const { error } = await upsertEvent({
+        title, slug,
+        description: get('description') || null,
+        event_date:  date,
+        event_time:  get('event_time') || null,
+        location:    get('location') || null,
+        image_url:   get('image_url') || null,
+        video_url:   get('video_url') || null,
+        status:      get('status') as 'upcoming' | 'past' | 'cancelled',
+      });
+      if (error) throw error;
+      (window as any).closeLoading();
+      (window as any).showToast('Evento guardado correctamente', 'success');
+      setTimeout(() => window.location.href = '/admin/eventos', 1200);
+    } catch (e: any) {
+      (window as any).closeLoading();
+      (window as any).showError('Error al guardar', e.message);
+    }
+  });
+</script>

@@ -1,0 +1,101 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import { getDocuments } from '../../../services/content';
+import { formatDateShort } from '../../../utils/helpers';
+
+const { data: documents } = await getDocuments();
+---
+
+<AdminLayout title="Documentos" activeSection="documentos">
+  <div class="flex items-center justify-between mb-6 animate-fade-in-down">
+    <p class="text-gray-500 text-sm">{documents?.length || 0} documentos en total</p>
+    <a href="/admin/documentos/nuevo" class="btn-primary text-sm py-2.5 gap-2">
+      <Icon name="plus" class="w-4 h-4" />
+      Nuevo documento
+    </a>
+  </div>
+
+  <div class="card-admin overflow-hidden animate-fade-in-up">
+    <table class="w-full admin-table">
+      <thead>
+        <tr>
+          <th>Documento</th>
+          <th class="hidden sm:table-cell">Tipo</th>
+          <th class="hidden md:table-cell">Fecha</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {documents && documents.length > 0 ? documents.map((doc, i) => (
+          <tr class="animate-fade-in-up" style={`animation-delay: ${i * 40}ms`}>
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Icon name="file-text" class="w-4 h-4 text-red-600" />
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 line-clamp-1">{doc.title}</p>
+                  {doc.description && <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">{doc.description}</p>}
+                </div>
+              </div>
+            </td>
+            <td class="hidden sm:table-cell"><span class="badge-gray">{doc.type || 'General'}</span></td>
+            <td class="hidden md:table-cell text-gray-500">
+              {doc.published_at ? formatDateShort(doc.published_at) : '—'}
+            </td>
+            <td class="text-right">
+              <div class="flex items-center justify-end gap-1">
+                <a href={doc.file_url} target="_blank" class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Ver archivo">
+                  <Icon name="external-link" class="w-4 h-4" />
+                </a>
+                <a href={`/admin/documentos/${doc.id}`} class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
+                  <Icon name="pencil" class="w-4 h-4" />
+                </a>
+                <button class="delete-btn p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={doc.id} data-title={doc.title} title="Eliminar">
+                  <Icon name="trash-2" class="w-4 h-4" />
+                </button>
+              </div>
+            </td>
+          </tr>
+        )) : (
+          <tr>
+            <td colspan="4" class="py-20 text-center text-gray-400">
+              <div class="flex flex-col items-center gap-3">
+                <Icon name="folder-open" class="w-12 h-12 opacity-30" />
+                <p class="font-medium">No hay documentos aún</p>
+                <a href="/admin/documentos/nuevo" class="btn-primary text-sm py-2">Subir primer documento</a>
+              </div>
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>
+
+<script>
+  import { deleteDocument } from '../../../services/content';
+  import { getSession } from '../../../lib/auth';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id    = Number((btn as HTMLElement).dataset.id);
+      const title = (btn as HTMLElement).dataset.title || '';
+      if (!await (window as any).confirmDelete(title)) return;
+      (window as any).showLoading('Eliminando...');
+      try {
+        const { error } = await deleteDocument(id);
+        if (error) throw error;
+        (window as any).closeLoading();
+        (window as any).showToast('Documento eliminado', 'success');
+        setTimeout(() => location.reload(), 1200);
+      } catch (e: any) {
+        (window as any).closeLoading();
+        (window as any).showError('Error al eliminar', e.message);
+      }
+    });
+  });
+</script>

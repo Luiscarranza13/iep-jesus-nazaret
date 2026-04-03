@@ -1,0 +1,116 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import AIAssistant from '../../../components/admin/AIAssistant.astro';
+import ImageUploader from '../../../components/admin/ImageUploader.astro';
+---
+
+<AdminLayout title="Nueva Noticia" activeSection="noticias">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center gap-3 mb-6 animate-fade-in-down">
+      <a href="/admin/noticias" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+        <Icon name="arrow-left" class="w-5 h-5" />
+      </a>
+      <h2 class="font-heading font-bold text-xl text-gray-900">Nueva Noticia</h2>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-5">
+        <div class="card-admin p-6 space-y-5 animate-fade-in-up">
+          <div>
+            <label class="label" for="title">Título *</label>
+            <input type="text" id="title" class="input" placeholder="Título de la noticia" />
+          </div>
+          <div>
+            <label class="label" for="slug">Slug</label>
+            <input type="text" id="slug" class="input font-mono text-sm" placeholder="titulo-de-la-noticia" />
+          </div>
+          <div>
+            <label class="label" for="summary">Resumen</label>
+            <textarea id="summary" rows="2" class="input resize-none" placeholder="Breve descripción..."></textarea>
+          </div>
+          <div>
+            <label class="label" for="content">Contenido</label>
+            <textarea id="content" rows="14" class="input resize-none" placeholder="Contenido completo de la noticia..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-5">
+        <div class="card-admin p-5 space-y-4 animate-fade-in-right">
+          <div class="flex items-center gap-2 mb-1">
+            <Icon name="settings-2" class="w-5 h-5 text-primary-600" />
+            <h3 class="font-semibold text-gray-900">Opciones</h3>
+          </div>
+          <div>
+            <label class="label" for="type">Tipo</label>
+            <select id="type" class="input">
+              <option value="">General</option>
+              <option value="Institucional">Institucional</option>
+              <option value="Académico">Académico</option>
+              <option value="Deportivo">Deportivo</option>
+              <option value="Cultural">Cultural</option>
+            </select>
+          </div>
+          <ImageUploader fieldId="image_url" bucket="blog-images" label="Imagen de la noticia" />
+          <div>
+            <label class="label" for="published_at">Fecha de publicación</label>
+            <input type="date" id="published_at" class="input" />
+          </div>
+          <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+            <input type="checkbox" id="featured" class="w-4 h-4 accent-primary-600 rounded" />
+            <label for="featured" class="text-sm font-medium text-gray-700 cursor-pointer">Marcar como destacada</label>
+          </div>
+          <button type="button" id="save-btn" class="btn-primary w-full justify-center text-sm py-3 gap-2">
+            <Icon name="send" class="w-4 h-4" />
+            Publicar noticia
+          </button>
+        </div>
+        <div class="animate-fade-in-right delay-100">
+          <AIAssistant targetField="content" module="news" />
+        </div>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { getSession } from '../../../lib/auth';
+  import { upsertNews } from '../../../services/content';
+  import { slugify } from '../../../utils/helpers';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  const titleEl = document.getElementById('title') as HTMLInputElement;
+  const slugEl  = document.getElementById('slug')  as HTMLInputElement;
+  titleEl?.addEventListener('input', () => {
+    if (!slugEl.dataset.manual) slugEl.value = slugify(titleEl.value);
+  });
+  slugEl?.addEventListener('input', () => { slugEl.dataset.manual = 'true'; });
+
+  const get = (id: string) => (document.getElementById(id) as any)?.value;
+
+  document.getElementById('save-btn')?.addEventListener('click', async () => {
+    const title = get('title'); const slug = get('slug');
+    if (!title || !slug) { (window as any).showToast('Título y slug son requeridos', 'error'); return; }
+    (window as any).showLoading('Publicando noticia...');
+    try {
+      const { error } = await upsertNews({
+        title, slug,
+        summary: get('summary') || null,
+        content: get('content') || null,
+        image_url: get('image_url') || null,
+        type: get('type') || null,
+        featured: (document.getElementById('featured') as HTMLInputElement)?.checked || false,
+        published_at: get('published_at') || new Date().toISOString(),
+      });
+      if (error) throw error;
+      (window as any).closeLoading();
+      (window as any).showToast('Noticia publicada correctamente', 'success');
+      setTimeout(() => window.location.href = '/admin/noticias', 1200);
+    } catch (e: any) {
+      (window as any).closeLoading();
+      (window as any).showError('Error al publicar', e.message);
+    }
+  });
+</script>

@@ -1,0 +1,110 @@
+---
+// Wrapper universal de iconos Lucide para Astro
+// Uso: <Icon name="home" class="w-5 h-5" />
+// Todos los iconos se renderizan como SVG en el servidor (sin JS)
+
+import {
+  LayoutDashboard, FileText, Newspaper, Image, CalendarDays, FolderOpen,
+  Mail, Settings, LogOut, ExternalLink, Plus, Pencil, Trash2, ArrowLeft,
+  ArrowUpRight, Save, Send, Search, Link, AlignLeft, Type, Eye, EyeOff,
+  AlertCircle, Check, Reply, Phone, Tag, Clock, Info, Upload, ImagePlus,
+  CalendarPlus, Settings2, ChevronDown, GraduationCap, Zap, Camera,
+  Images, MailOpen, Home, Users, BookOpen, Globe, MapPin, Menu, X,
+  ChevronRight, Star, Award, Target, Heart, Shield, TrendingUp, Bell,
+  Download, Filter, RefreshCw, Lock, User, LogIn, Sparkles, School,
+  Share2, BookMarked, Lightbulb, MessageSquare, FileCheck, Layers,
+} from '@lucide/astro';
+
+interface Props {
+  name: string;
+  class?: string;
+  size?: number;
+  strokeWidth?: number;
+}
+
+const { name, class: className = 'w-5 h-5', size, strokeWidth = 2 } = Astro.props;
+
+const iconMap: Record<string, any> = {
+  'layout-dashboard': LayoutDashboard,
+  'file-text': FileText,
+  'newspaper': Newspaper,
+  'image': Image,
+  'calendar-days': CalendarDays,
+  'folder-open': FolderOpen,
+  'mail': Mail,
+  'settings': Settings,
+  'log-out': LogOut,
+  'external-link': ExternalLink,
+  'plus': Plus,
+  'pencil': Pencil,
+  'trash-2': Trash2,
+  'arrow-left': ArrowLeft,
+  'arrow-up-right': ArrowUpRight,
+  'save': Save,
+  'send': Send,
+  'search': Search,
+  'link': Link,
+  'align-left': AlignLeft,
+  'type': Type,
+  'eye': Eye,
+  'eye-off': EyeOff,
+  'alert-circle': AlertCircle,
+  'check': Check,
+  'reply': Reply,
+  'phone': Phone,
+  'tag': Tag,
+  'clock': Clock,
+  'info': Info,
+  'upload': Upload,
+  'image-plus': ImagePlus,
+  'calendar-plus': CalendarPlus,
+  'settings-2': Settings2,
+  'chevron-down': ChevronDown,
+  'graduation-cap': GraduationCap,
+  'zap': Zap,
+  'camera': Camera,
+  'images': Images,
+  'mail-open': MailOpen,
+  'home': Home,
+  'users': Users,
+  'book-open': BookOpen,
+  'globe': Globe,
+  'map-pin': MapPin,
+  'menu': Menu,
+  'x': X,
+  'chevron-right': ChevronRight,
+  'star': Star,
+  'award': Award,
+  'target': Target,
+  'heart': Heart,
+  'shield': Shield,
+  'trending-up': TrendingUp,
+  'bell': Bell,
+  'download': Download,
+  'filter': Filter,
+  'refresh-cw': RefreshCw,
+  'lock': Lock,
+  'user': User,
+  'log-in': LogIn,
+  'sparkles': Sparkles,
+  'school': School,
+  'share-2': Share2,
+  'book-marked': BookMarked,
+  'lightbulb': Lightbulb,
+  'message-square': MessageSquare,
+  'file-check': FileCheck,
+  'layers': Layers,
+};
+
+const IconComponent = iconMap[name];
+---
+
+{IconComponent ? (
+  <IconComponent class={className} size={size} strokeWidth={strokeWidth} />
+) : (
+  <svg class={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </svg>
+)}

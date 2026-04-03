@@ -1,0 +1,25 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Navbar from '../components/public/Navbar.astro';
+import Footer from '../components/public/Footer.astro';
+import WhatsAppButton from '../components/public/WhatsAppButton.astro';
+import { getSettings } from '../services/settings';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const props = Astro.props;
+const settings = await getSettings();
+---
+
+<BaseLayout {...props}>
+  <Navbar settings={settings} />
+  <main>
+    <slot />
+  </main>
+  <Footer settings={settings} />
+  <WhatsAppButton phone={settings.whatsapp || ''} />
+</BaseLayout>

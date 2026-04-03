@@ -1,0 +1,124 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import { getAdminMessages } from '../../../services/admin-content';
+import { formatDate } from '../../../utils/helpers';
+
+const messages = await getAdminMessages().catch(() => []);
+const unread = messages?.filter(m => !m.is_read).length || 0;
+---
+
+<AdminLayout title="Mensajes" activeSection="mensajes">
+  <div class="flex items-center gap-3 mb-6 animate-fade-in-down">
+    <p class="text-gray-500 text-sm">{messages?.length || 0} mensajes recibidos</p>
+    {unread > 0 && <span class="badge-danger">{unread} sin leer</span>}
+  </div>
+
+  <div class="space-y-4">
+    {messages && messages.length > 0 ? messages.map((msg, i) => (
+      <div
+        class={`card-admin p-5 border-l-4 transition-all duration-300 animate-fade-in-up ${msg.is_read ? 'border-gray-200' : 'border-primary-500 bg-primary-50/30'}`}
+        style={`animation-delay: ${i * 50}ms`}
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-9 h-9 bg-gradient-primary rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                {msg.name[0]?.toUpperCase()}
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900">{msg.name}</p>
+                {!msg.is_read && <span class="badge-primary text-xs">Nuevo</span>}
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-4 text-sm text-gray-500 mb-3 ml-12">
+              <span class="flex items-center gap-1.5">
+                <Icon name="mail" class="w-3.5 h-3.5" />{msg.email}
+              </span>
+              {msg.phone && (
+                <span class="flex items-center gap-1.5">
+                  <Icon name="phone" class="w-3.5 h-3.5" />{msg.phone}
+                </span>
+              )}
+              {msg.subject && (
+                <span class="flex items-center gap-1.5">
+                  <Icon name="tag" class="w-3.5 h-3.5" />{msg.subject}
+                </span>
+              )}
+              <span class="flex items-center gap-1.5">
+                <Icon name="clock" class="w-3.5 h-3.5" />{formatDate(msg.created_at)}
+              </span>
+            </div>
+            <div class="ml-12 bg-gray-50 rounded-xl p-4 text-gray-700 text-sm leading-relaxed border border-gray-100">
+              {msg.message}
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2 flex-shrink-0">
+            {!msg.is_read && (
+              <button class="mark-read-btn flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800 font-medium px-3 py-2 rounded-xl border border-primary-200 hover:bg-primary-50 transition-all" data-id={msg.id}>
+                <Icon name="check" class="w-3.5 h-3.5" />
+                Leído
+              </button>
+            )}
+            <a href={`mailto:${msg.email}?subject=Re: ${msg.subject || 'Consulta'}`} class="flex items-center gap-1.5 text-xs text-green-600 hover:text-green-800 font-medium px-3 py-2 rounded-xl border border-green-200 hover:bg-green-50 transition-all">
+              <Icon name="reply" class="w-3.5 h-3.5" />
+              Responder
+            </a>
+            <button class="delete-btn flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 font-medium px-3 py-2 rounded-xl border border-red-200 hover:bg-red-50 transition-all" data-id={msg.id} data-name={msg.name}>
+              <Icon name="trash-2" class="w-3.5 h-3.5" />
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    )) : (
+      <div class="card-admin p-20 text-center text-gray-400 animate-fade-in-up">
+        <Icon name="mail-open" class="w-14 h-14 opacity-30 mx-auto mb-4" />
+        <p class="font-medium text-lg">No hay mensajes aún</p>
+        <p class="text-sm mt-1">Los mensajes del formulario de contacto aparecerán aquí</p>
+      </div>
+    )}
+  </div>
+</AdminLayout>
+
+<script>
+  import { markMessageRead, deleteMessage } from '../../../services/content';
+  import { getSession } from '../../../lib/auth';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  document.querySelectorAll('.mark-read-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = Number((btn as HTMLElement).dataset.id);
+      (window as any).showLoading('Actualizando...');
+      try {
+        await markMessageRead(id);
+        (window as any).closeLoading();
+        (window as any).showToast('Marcado como leído', 'success');
+        setTimeout(() => location.reload(), 800);
+      } catch (e: any) {
+        (window as any).closeLoading();
+        (window as any).showError('Error', e.message);
+      }
+    });
+  });
+
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id   = Number((btn as HTMLElement).dataset.id);
+      const name = (btn as HTMLElement).dataset.name || 'este mensaje';
+      if (!await (window as any).confirmDelete(`mensaje de ${name}`)) return;
+      (window as any).showLoading('Eliminando...');
+      try {
+        await deleteMessage(id);
+        (window as any).closeLoading();
+        (window as any).showToast('Mensaje eliminado', 'success');
+        setTimeout(() => location.reload(), 800);
+      } catch (e: any) {
+        (window as any).closeLoading();
+        (window as any).showError('Error', e.message);
+      }
+    });
+  });
+</script>

@@ -1,0 +1,103 @@
+---
+import PublicLayout from '../../layouts/PublicLayout.astro';
+import { getDocuments } from '../../services/content';
+import { formatDateShort } from '../../utils/helpers';
+
+const { data: documents } = await getDocuments();
+
+const docsToShow = documents || [];
+const types = [...new Set(docsToShow.map((d: any) => d.type).filter(Boolean))];
+---
+
+<PublicLayout
+  title="Documentos – I.E. Jesús de Nazaret"
+  description="Descarga comunicados, reglamentos, horarios y documentos institucionales de la I.E. Jesús de Nazaret."
+>
+  <div class="bg-gradient-primary text-white py-14 sm:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4">Documentos</h1>
+      <p class="text-white/80 text-base sm:text-xl max-w-2xl mx-auto">
+        Comunicados, reglamentos y documentos institucionales para la comunidad educativa
+      </p>
+    </div>
+  </div>
+
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- Filtros por tipo -->
+      <div class="flex flex-wrap gap-2 mb-8">
+        <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium bg-primary-700 text-white transition-all" data-type="all">
+          Todos
+        </button>
+        {types.map(type => (
+          <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-primary-300 hover:text-primary-700 transition-all" data-type={type}>
+            {type}
+          </button>
+        ))}
+      </div>
+
+      <!-- Lista de documentos -->
+      {docsToShow.length === 0 ? (
+        <div class="text-center py-20 text-gray-400">
+          <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <p class="text-lg font-medium">Aún no hay documentos publicados</p>
+          <p class="text-sm mt-1">Los comunicados y documentos institucionales aparecerán aquí</p>
+        </div>
+      ) : (
+      <div class="space-y-3" id="docs-list">
+        {docsToShow.map((doc: any) => (
+          <div class="card p-5 flex items-center gap-5 hover:-translate-y-0.5 transition-all duration-200 doc-item" data-type={doc.type || 'all'}>
+            <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-semibold text-gray-900 text-base">{doc.title}</h3>
+              {doc.description && <p class="text-gray-500 text-sm mt-0.5">{doc.description}</p>}
+              <div class="flex items-center gap-3 mt-1.5">
+                {doc.type && <span class="badge-gray text-xs">{doc.type}</span>}
+                {doc.published_at && <span class="text-xs text-gray-400">{formatDateShort(doc.published_at)}</span>}
+              </div>
+            </div>
+            <a
+              href={doc.file_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex-shrink-0 btn-primary text-sm py-2 px-4"
+              download
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Descargar
+            </a>
+          </div>
+        ))}
+      </div>
+      )}
+    </div>
+  </section>
+</PublicLayout>
+
+<script>
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('bg-primary-700', 'text-white');
+        b.classList.add('bg-white', 'text-gray-600', 'border', 'border-gray-200');
+      });
+      btn.classList.add('bg-primary-700', 'text-white');
+      btn.classList.remove('bg-white', 'text-gray-600', 'border', 'border-gray-200');
+
+      const type = (btn as HTMLElement).dataset.type;
+      document.querySelectorAll('.doc-item').forEach(item => {
+        const itemType = (item as HTMLElement).dataset.type;
+        (item as HTMLElement).style.display = (type === 'all' || itemType === type) ? 'flex' : 'none';
+      });
+    });
+  });
+</script>

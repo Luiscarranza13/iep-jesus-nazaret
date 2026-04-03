@@ -1,0 +1,126 @@
+---
+import PublicLayout from '../../layouts/PublicLayout.astro';
+import { getGalleryBySlug } from '../../services/content';
+
+const { slug } = Astro.params;
+const { data: gallery } = await getGalleryBySlug(slug!);
+
+if (!gallery) return Astro.redirect('/galeria');
+
+const photos = (gallery as any).photos ?? [];
+---
+
+<PublicLayout
+  title={`${gallery.title} – Galería I.E. Jesús de Nazaret`}
+  description={gallery.description || `Galería fotográfica: ${gallery.title}`}
+  image={gallery.cover_image_url || undefined}
+>
+  <div class="bg-gradient-primary text-white py-14 sm:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3">{gallery.title}</h1>
+      {gallery.description && <p class="text-white/80 text-lg max-w-2xl">{gallery.description}</p>}
+      <p class="text-white/60 text-sm mt-3">{photos.length} foto{photos.length !== 1 ? 's' : ''}</p>
+    </div>
+  </div>
+
+  <section class="py-12 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      {photos.length > 0 ? (
+        <div class="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4" id="photo-grid">
+          {photos.map((photo: any) => (
+            <div class="break-inside-avoid group relative overflow-hidden rounded-2xl cursor-pointer photo-item"
+                 data-src={photo.image_url} data-title={photo.title ?? ''}>
+              <img
+                src={photo.image_url}
+                alt={photo.title ?? gallery.title}
+                class="w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+              />
+              {photo.title && (
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                  <p class="text-white text-sm font-medium">{photo.title}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-20 text-gray-400">
+          <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <p class="text-lg font-medium">Esta galería aún no tiene fotos</p>
+        </div>
+      )}
+
+      <div class="mt-10">
+        <a href="/galeria" class="flex items-center gap-2 text-primary-700 font-semibold text-sm hover:gap-3 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Volver a galerías
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4" role="dialog">
+    <button id="lb-close" class="absolute top-4 right-4 text-white/70 hover:text-white p-2 rounded-xl hover:bg-white/10 transition-colors">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+    <button id="lb-prev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-3 rounded-xl hover:bg-white/10 transition-colors">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <button id="lb-next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-3 rounded-xl hover:bg-white/10 transition-colors">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    </button>
+    <img id="lb-img" src="" alt="" class="max-h-[85vh] max-w-full object-contain rounded-xl" />
+    <p id="lb-caption" class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 text-sm bg-black/40 px-4 py-2 rounded-full"></p>
+  </div>
+</PublicLayout>
+
+<script>
+  const items = Array.from(document.querySelectorAll<HTMLElement>('.photo-item'));
+  const lb     = document.getElementById('lightbox')!;
+  const lbImg  = document.getElementById('lb-img') as HTMLImageElement;
+  const lbCap  = document.getElementById('lb-caption')!;
+  let current  = 0;
+
+  function open(idx: number) {
+    current = idx;
+    const item = items[idx];
+    lbImg.src = item.dataset.src ?? '';
+    lbCap.textContent = item.dataset.title ?? '';
+    lb.classList.remove('hidden');
+    lb.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  }
+  function close() {
+    lb.classList.add('hidden');
+    lb.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+  function prev() { open((current - 1 + items.length) % items.length); }
+  function next() { open((current + 1) % items.length); }
+
+  items.forEach((item, i) => item.addEventListener('click', () => open(i)));
+  document.getElementById('lb-close')?.addEventListener('click', close);
+  document.getElementById('lb-prev')?.addEventListener('click', prev);
+  document.getElementById('lb-next')?.addEventListener('click', next);
+  lb.addEventListener('click', e => { if (e.target === lb) close(); });
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('hidden')) {
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+    }
+  });
+</script>

@@ -1,0 +1,92 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import { getAllEvents } from '../../../services/content';
+import { formatDateShort } from '../../../utils/helpers';
+
+const { data: events } = await getAllEvents();
+---
+
+<AdminLayout title="Eventos" activeSection="eventos">
+  <div class="flex items-center justify-between mb-6 animate-fade-in-down">
+    <p class="text-gray-500 text-sm">{events?.length || 0} eventos en total</p>
+    <a href="/admin/eventos/nuevo" class="btn-primary text-sm py-2.5 gap-2">
+      <Icon name="plus" class="w-4 h-4" />
+      Nuevo evento
+    </a>
+  </div>
+
+  <div class="card-admin overflow-hidden animate-fade-in-up">
+    <table class="w-full admin-table">
+      <thead>
+        <tr>
+          <th>Evento</th>
+          <th class="hidden sm:table-cell">Fecha</th>
+          <th class="hidden md:table-cell">Lugar</th>
+          <th class="hidden lg:table-cell">Estado</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {events && events.length > 0 ? events.map((event, i) => (
+          <tr class="animate-fade-in-up" style={`animation-delay: ${i * 40}ms`}>
+            <td><p class="font-semibold text-gray-900 line-clamp-1">{event.title}</p></td>
+            <td class="hidden sm:table-cell text-gray-500">{formatDateShort(event.event_date)}</td>
+            <td class="hidden md:table-cell text-gray-500">{event.location || '—'}</td>
+            <td class="hidden lg:table-cell">
+              <span class={`badge ${event.status === 'upcoming' ? 'badge-success' : event.status === 'cancelled' ? 'badge-danger' : 'badge-gray'}`}>
+                {event.status === 'upcoming' ? 'Próximo' : event.status === 'cancelled' ? 'Cancelado' : 'Realizado'}
+              </span>
+            </td>
+            <td class="text-right">
+              <div class="flex items-center justify-end gap-1">
+                <a href={`/admin/eventos/${event.id}`} class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
+                  <Icon name="pencil" class="w-4 h-4" />
+                </a>
+                <button class="delete-btn p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={event.id} data-title={event.title} title="Eliminar">
+                  <Icon name="trash-2" class="w-4 h-4" />
+                </button>
+              </div>
+            </td>
+          </tr>
+        )) : (
+          <tr>
+            <td colspan="5" class="py-20 text-center text-gray-400">
+              <div class="flex flex-col items-center gap-3">
+                <Icon name="calendar-days" class="w-12 h-12 opacity-30" />
+                <p class="font-medium">No hay eventos aún</p>
+                <a href="/admin/eventos/nuevo" class="btn-primary text-sm py-2">Crear primer evento</a>
+              </div>
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>
+
+<script>
+  import { deleteEvent } from '../../../services/content';
+  import { getSession } from '../../../lib/auth';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id    = Number((btn as HTMLElement).dataset.id);
+      const title = (btn as HTMLElement).dataset.title || '';
+      if (!await (window as any).confirmDelete(title)) return;
+      (window as any).showLoading('Eliminando...');
+      try {
+        const { error } = await deleteEvent(id);
+        if (error) throw error;
+        (window as any).closeLoading();
+        (window as any).showToast('Evento eliminado', 'success');
+        setTimeout(() => location.reload(), 1200);
+      } catch (e: any) {
+        (window as any).closeLoading();
+        (window as any).showError('Error al eliminar', e.message);
+      }
+    });
+  });
+</script>

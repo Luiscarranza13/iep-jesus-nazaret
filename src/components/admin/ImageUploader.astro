@@ -1,0 +1,735 @@
+---
+interface Props {
+  fieldId: string;
+  bucket: string;
+  label?: string;
+  accept?: string;
+  currentUrl?: string;
+  showAiGen?: boolean;
+  allowExternalUrl?: boolean;
+  urlMode?: 'auto' | 'image' | 'video' | 'document';
+  urlPlaceholder?: string;
+}
+
+const {
+  fieldId,
+  bucket,
+  label = 'Imagen',
+  accept = 'image/*',
+  currentUrl = '',
+  showAiGen = true,
+  allowExternalUrl = true,
+  urlMode = 'auto',
+  urlPlaceholder,
+} = Astro.props;
+
+const acceptValue = accept.toLowerCase();
+const isPdfBucket = bucket === 'documents' || acceptValue.includes('pdf');
+const inferredMediaMode = isPdfBucket
+  ? 'document'
+  : acceptValue.includes('video')
+    ? 'video'
+    : 'image';
+const mediaMode = urlMode === 'auto' ? inferredMediaMode : urlMode;
+
+const placeholderTitle = mediaMode === 'document'
+  ? 'Haz clic o arrastra un documento'
+  : mediaMode === 'video'
+    ? 'Haz clic o arrastra un video'
+    : 'Haz clic o arrastra una imagen';
+
+const placeholderSubtitle = mediaMode === 'document'
+  ? 'PDF - Max. 10 MB'
+  : mediaMode === 'video'
+    ? 'MP4, WEBM, MOV - Max. 50 MB'
+    : 'PNG, JPG, WEBP - Max. 5 MB';
+
+const externalUrlPlaceholder = urlPlaceholder ?? (
+  mediaMode === 'document'
+    ? 'Pega la URL del documento'
+    : mediaMode === 'video'
+      ? 'Pega la URL del video o YouTube'
+      : 'Pega la URL de la imagen'
+);
+
+const externalUrlHelp = mediaMode === 'document'
+  ? 'Puedes usar un PDF alojado en otra plataforma o en tu nube.'
+  : mediaMode === 'video'
+    ? 'Acepta videos directos y enlaces de YouTube.'
+    : 'Puedes pegar una imagen alojada en otra web o en tu almacenamiento.';
+---
+
+<div
+  class="image-uploader space-y-2"
+  data-field={fieldId}
+  data-bucket={bucket}
+  data-pdf={isPdfBucket}
+  data-media-mode={mediaMode}
+  data-allow-url={allowExternalUrl}
+>
+  <label class="label">{label}</label>
+
+  <input type="hidden" id={fieldId} value={currentUrl} />
+
+  <div
+    class="upload-zone relative overflow-hidden rounded-xl border-2 border-dashed border-gray-200 transition-all duration-200 cursor-pointer hover:border-primary-400 hover:bg-primary-50/20 group"
+    style="min-height:130px"
+  >
+    <div class="preview-wrap hidden absolute inset-0 z-20">
+      <img class="preview-img hidden h-full w-full object-cover" src="" alt="Preview" />
+      <video class="preview-video hidden h-full w-full object-cover bg-black" controls playsinline preload="metadata"></video>
+      <iframe
+        class="preview-embed hidden h-full w-full border-0 bg-black"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+      ></iframe>
+
+      <div class="pdf-overlay hidden absolute inset-0 flex flex-col items-center justify-center gap-2 bg-red-50">
+        <svg class="h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+          />
+        </svg>
+        <span class="pdf-name line-clamp-2 px-3 text-center text-sm font-semibold text-red-700"></span>
+        <a class="pdf-link text-xs text-red-500 underline" href="#" target="_blank" rel="noopener noreferrer">Ver archivo</a>
+      </div>
+
+      <div class="absolute inset-0 z-30 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+        <button
+          type="button"
+          class="change-btn flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 transition-colors hover:bg-gray-100"
+        >
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+            />
+          </svg>
+          Cambiar
+        </button>
+        <button
+          type="button"
+          class="remove-btn flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-600"
+        >
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+          Quitar
+        </button>
+      </div>
+    </div>
+
+    <div class="placeholder-wrap pointer-events-none flex flex-col items-center justify-center gap-2 px-4 py-8 text-center">
+      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 text-primary-600 transition-colors group-hover:bg-primary-200">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-gray-700 transition-colors group-hover:text-primary-700">
+          {placeholderTitle}
+        </p>
+        <p class="mt-0.5 text-xs text-gray-400">
+          {placeholderSubtitle}
+        </p>
+      </div>
+    </div>
+
+    <div class="progress-bar hidden absolute bottom-0 left-0 right-0 h-1 bg-gray-100">
+      <div class="progress-fill h-full bg-primary-600 transition-all duration-300" style="width:0%"></div>
+    </div>
+
+    <input
+      type="file"
+      class="file-input absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+      accept={accept}
+    />
+  </div>
+
+  {allowExternalUrl && (
+    <div class="space-y-2">
+      <div class="flex gap-2">
+        <input
+          type="url"
+          class="media-url-input input flex-1 py-2 text-xs"
+          placeholder={externalUrlPlaceholder}
+          value={currentUrl}
+        />
+        <button
+          type="button"
+          class="apply-url-btn flex flex-shrink-0 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+        >
+          Usar URL
+        </button>
+      </div>
+      <p class="text-xs text-gray-400">{externalUrlHelp}</p>
+    </div>
+  )}
+
+  {!isPdfBucket && showAiGen && mediaMode === 'image' && (
+    <div class="flex gap-2">
+      <div class="relative flex-1">
+        <div class="flex gap-1.5">
+          <input
+            type="text"
+            class="ai-prompt-input input flex-1 py-2 text-xs"
+            placeholder="Describe la imagen (ej: estudiantes en clase)"
+          />
+          <button
+            type="button"
+            class="ai-gen-btn flex flex-shrink-0 items-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-violet-700"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            <span class="ai-gen-text">IA</span>
+            <span class="ai-gen-loading hidden">...</span>
+          </button>
+        </div>
+        <p class="mt-1 text-xs text-gray-400">Genera una imagen relacionada gratis</p>
+      </div>
+    </div>
+  )}
+
+  <div class="upload-status hidden text-xs"></div>
+</div>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  const VIDEO_EXT_RE = /\.(mp4|m4v|mov|webm|ogg|ogv)(?:[?#].*)?$/i;
+  const IMAGE_EXT_RE = /\.(avif|bmp|gif|ico|jpe?g|png|svg|webp)(?:[?#].*)?$/i;
+  const PDF_EXT_RE = /\.pdf(?:[?#].*)?$/i;
+
+  document.querySelectorAll<HTMLElement>('.image-uploader').forEach(uploader => {
+    const fieldId = uploader.dataset.field!;
+    const bucket = uploader.dataset.bucket!;
+    const mediaMode = uploader.dataset.mediaMode as 'image' | 'video' | 'document';
+    const hidden = document.getElementById(fieldId) as HTMLInputElement;
+    const fileInput = uploader.querySelector<HTMLInputElement>('.file-input')!;
+    const zone = uploader.querySelector<HTMLElement>('.upload-zone')!;
+    const previewWrap = uploader.querySelector<HTMLElement>('.preview-wrap')!;
+    const previewImg = uploader.querySelector<HTMLImageElement>('.preview-img')!;
+    const previewVideo = uploader.querySelector<HTMLVideoElement>('.preview-video')!;
+    const previewEmbed = uploader.querySelector<HTMLIFrameElement>('.preview-embed')!;
+    const pdfOverlay = uploader.querySelector<HTMLElement>('.pdf-overlay')!;
+    const pdfName = uploader.querySelector<HTMLElement>('.pdf-name')!;
+    const pdfLink = uploader.querySelector<HTMLAnchorElement>('.pdf-link')!;
+    const placeholder = uploader.querySelector<HTMLElement>('.placeholder-wrap')!;
+    const progressBar = uploader.querySelector<HTMLElement>('.progress-bar')!;
+    const progressFill = uploader.querySelector<HTMLElement>('.progress-fill')!;
+    const statusEl = uploader.querySelector<HTMLElement>('.upload-status')!;
+    const changeBtn = uploader.querySelector<HTMLButtonElement>('.change-btn');
+    const removeBtn = uploader.querySelector<HTMLButtonElement>('.remove-btn');
+    const aiBtn = uploader.querySelector<HTMLButtonElement>('.ai-gen-btn');
+    const aiInput = uploader.querySelector<HTMLInputElement>('.ai-prompt-input');
+    const urlInput = uploader.querySelector<HTMLInputElement>('.media-url-input');
+    const urlApplyBtn = uploader.querySelector<HTMLButtonElement>('.apply-url-btn');
+
+    if (hidden.value) {
+      showExisting(hidden.value);
+    }
+
+    changeBtn?.addEventListener('click', event => {
+      event.stopPropagation();
+      fileInput.click();
+    });
+
+    removeBtn?.addEventListener('click', event => {
+      event.stopPropagation();
+      resetUploader();
+      setStatus('', '');
+    });
+
+    urlApplyBtn?.addEventListener('click', () => {
+      applyExternalUrl(urlInput?.value ?? '');
+    });
+
+    urlInput?.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        applyExternalUrl(urlInput.value);
+      }
+    });
+
+    zone.addEventListener('dragover', event => {
+      event.preventDefault();
+      zone.classList.add('border-primary-500', 'bg-primary-50');
+    });
+
+    zone.addEventListener('dragleave', () => {
+      zone.classList.remove('border-primary-500', 'bg-primary-50');
+    });
+
+    zone.addEventListener('drop', event => {
+      event.preventDefault();
+      zone.classList.remove('border-primary-500', 'bg-primary-50');
+      const file = event.dataTransfer?.files[0];
+      if (file) {
+        uploadFile(file);
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files?.[0]) {
+        uploadFile(fileInput.files[0]);
+      }
+    });
+
+    aiBtn?.addEventListener('click', async () => {
+      const prompt = aiInput?.value.trim();
+      if (!prompt) {
+        setStatus('Escribe una descripcion para la imagen', 'error');
+        return;
+      }
+
+      const aiText = aiBtn.querySelector<HTMLElement>('.ai-gen-text')!;
+      const aiLoading = aiBtn.querySelector<HTMLElement>('.ai-gen-loading')!;
+
+      aiText.classList.add('hidden');
+      aiLoading.classList.remove('hidden');
+      aiBtn.disabled = true;
+      showProgress(20);
+      setStatus('Generando imagen con IA...', 'loading');
+
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session) {
+          throw new Error('Debes iniciar sesion para generar imagenes');
+        }
+
+        const res = await fetch('/api/ai-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ prompt, bucket }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error ?? `Error ${res.status}`);
+        }
+
+        showProgress(85);
+        syncValue(data.publicUrl);
+        showImagePreview(data.publicUrl);
+        showProgress(100);
+        setStatus(data.message ?? 'Imagen generada correctamente', 'success');
+        setTimeout(hideProgress, 900);
+      } catch (err: any) {
+        hideProgress();
+        setStatus(`Error: ${err.message}`, 'error');
+      } finally {
+        aiText.classList.remove('hidden');
+        aiLoading.classList.add('hidden');
+        aiBtn.disabled = false;
+      }
+    });
+
+    async function uploadFile(file: File) {
+      const maxSize = mediaMode === 'document'
+        ? 10 * 1024 * 1024
+        : mediaMode === 'video'
+          ? 50 * 1024 * 1024
+          : 5 * 1024 * 1024;
+
+      if (file.size > maxSize) {
+        const maxLabel = mediaMode === 'document' ? '10' : mediaMode === 'video' ? '50' : '5';
+        setStatus(`El archivo supera los ${maxLabel} MB`, 'error');
+        return;
+      }
+
+      const fileName = file.name.toLowerCase();
+      const isFilePdf = file.type === 'application/pdf' || fileName.endsWith('.pdf');
+      const isFileImage = file.type.startsWith('image/');
+      const isFileVideo = file.type.startsWith('video/');
+
+      if (mediaMode === 'document' && !isFilePdf) {
+        setStatus('Este campo solo acepta documentos PDF', 'error');
+        return;
+      }
+
+      if (mediaMode === 'image' && !isFileImage) {
+        setStatus('Este campo solo acepta imagenes', 'error');
+        return;
+      }
+
+      if (mediaMode === 'video' && !isFileVideo) {
+        setStatus('Este campo solo acepta videos', 'error');
+        return;
+      }
+
+      setStatus('Subiendo...', 'loading');
+      showProgress(15);
+
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session) {
+          throw new Error('Debes iniciar sesion para subir archivos');
+        }
+
+        const ext = file.name.split('.').pop() ?? (isFilePdf ? 'pdf' : isFileVideo ? 'mp4' : 'jpg');
+        const name = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+        showProgress(40);
+
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(name, file, { upsert: false, contentType: file.type });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        showProgress(90);
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from(bucket).getPublicUrl(name);
+
+        syncValue(publicUrl);
+
+        if (isFilePdf) {
+          showPdfPreview(publicUrl, file.name);
+        } else if (isFileVideo) {
+          showVideoPreview(publicUrl);
+        } else {
+          showImagePreview(publicUrl);
+        }
+
+        showProgress(100);
+        setStatus('Subido correctamente', 'success');
+        setTimeout(hideProgress, 900);
+      } catch (err: any) {
+        hideProgress();
+        const msg = err.message ?? '';
+        if (msg.includes('row-level security') || msg.includes('policy')) {
+          setStatus('Sin permisos. Revisa las policies de storage en Supabase.', 'error');
+        } else {
+          setStatus(`Error: ${msg || 'No se pudo subir'}`, 'error');
+        }
+      }
+    }
+
+    function applyExternalUrl(rawUrl: string) {
+      const url = rawUrl.trim();
+      if (!url) {
+        setStatus('Pega una URL valida', 'error');
+        return;
+      }
+
+      const validation = validateExternalUrl(url);
+      if (!validation.ok) {
+        setStatus(validation.message, 'error');
+        return;
+      }
+
+      syncValue(url);
+
+      if (validation.kind === 'pdf') {
+        showPdfPreview(url, getFileName(url));
+      } else if (validation.kind === 'video') {
+        showVideoPreview(url);
+      } else if (validation.kind === 'embed') {
+        showEmbedPreview(url);
+      } else {
+        showImagePreview(url);
+      }
+
+      setStatus('URL enlazada correctamente', 'success');
+    }
+
+    function showExisting(url: string) {
+      const validation = validateExternalUrl(url);
+      if (!validation.ok) {
+        showImagePreview(url);
+        return;
+      }
+
+      if (validation.kind === 'pdf') {
+        showPdfPreview(url, getFileName(url));
+        return;
+      }
+
+      if (validation.kind === 'video') {
+        showVideoPreview(url);
+        return;
+      }
+
+      if (validation.kind === 'embed') {
+        showEmbedPreview(url);
+        return;
+      }
+
+      showImagePreview(url);
+    }
+
+    function syncValue(url: string) {
+      hidden.value = url;
+      hidden.dispatchEvent(new Event('input', { bubbles: true }));
+      hidden.dispatchEvent(new Event('change', { bubbles: true }));
+
+      if (urlInput) {
+        urlInput.value = url;
+      }
+    }
+
+    function clearPreviewState() {
+      previewImg.classList.add('hidden');
+      previewImg.src = '';
+
+      previewVideo.pause();
+      previewVideo.classList.add('hidden');
+      previewVideo.removeAttribute('src');
+      previewVideo.load();
+
+      previewEmbed.classList.add('hidden');
+      previewEmbed.removeAttribute('src');
+
+      pdfOverlay.classList.add('hidden');
+      pdfName.textContent = '';
+      pdfLink.href = '#';
+    }
+
+    function showImagePreview(url: string) {
+      clearPreviewState();
+      previewImg.src = url;
+      previewImg.classList.remove('hidden');
+      previewWrap.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+      if (urlInput) {
+        urlInput.value = url;
+      }
+    }
+
+    function showVideoPreview(url: string) {
+      clearPreviewState();
+      previewVideo.src = url;
+      previewVideo.classList.remove('hidden');
+      previewWrap.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+      if (urlInput) {
+        urlInput.value = url;
+      }
+    }
+
+    function showEmbedPreview(url: string) {
+      clearPreviewState();
+      previewEmbed.src = normalizeEmbedUrl(url);
+      previewEmbed.classList.remove('hidden');
+      previewWrap.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+      if (urlInput) {
+        urlInput.value = url;
+      }
+    }
+
+    function showPdfPreview(url: string, filename: string) {
+      clearPreviewState();
+      pdfOverlay.classList.remove('hidden');
+      pdfName.textContent = filename;
+      pdfLink.href = url;
+      previewWrap.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+      if (urlInput) {
+        urlInput.value = url;
+      }
+    }
+
+    function resetUploader() {
+      hidden.value = '';
+      hidden.dispatchEvent(new Event('input', { bubbles: true }));
+      hidden.dispatchEvent(new Event('change', { bubbles: true }));
+      fileInput.value = '';
+      if (urlInput) {
+        urlInput.value = '';
+      }
+      clearPreviewState();
+      previewWrap.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+      hideProgress();
+    }
+
+    function showProgress(pct: number) {
+      progressBar.classList.remove('hidden');
+      progressFill.style.width = `${pct}%`;
+    }
+
+    function hideProgress() {
+      progressBar.classList.add('hidden');
+      progressFill.style.width = '0%';
+    }
+
+    function setStatus(msg: string, type: 'success' | 'error' | 'loading' | '') {
+      if (!msg) {
+        statusEl.classList.add('hidden');
+        statusEl.textContent = '';
+        return;
+      }
+
+      statusEl.classList.remove('hidden', 'text-green-600', 'text-red-600', 'text-gray-500');
+      statusEl.classList.add(
+        type === 'success'
+          ? 'text-green-600'
+          : type === 'error'
+            ? 'text-red-600'
+            : 'text-gray-500',
+      );
+      statusEl.textContent = msg;
+    }
+
+    function validateExternalUrl(rawUrl: string) {
+      let parsed: URL;
+      try {
+        parsed = new URL(rawUrl);
+      } catch {
+        return { ok: false, message: 'La URL no es valida' } as const;
+      }
+
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        return { ok: false, message: 'Solo se permiten URLs http o https' } as const;
+      }
+
+      const kind = detectUrlKind(rawUrl);
+
+      if (mediaMode === 'image' && ['video', 'embed', 'pdf'].includes(kind)) {
+        return { ok: false, message: 'Este campo solo acepta imagenes' } as const;
+      }
+
+      if (mediaMode === 'document' && ['video', 'embed', 'image'].includes(kind)) {
+        return { ok: false, message: 'Este campo solo acepta documentos' } as const;
+      }
+
+      if (mediaMode === 'video' && ['image', 'pdf'].includes(kind)) {
+        return { ok: false, message: 'Este campo solo acepta videos' } as const;
+      }
+
+      return {
+        ok: true,
+        kind: kind === 'unknown' ? fallbackKindForMode() : kind,
+      } as const;
+    }
+
+    function detectUrlKind(rawUrl: string) {
+      const lowerUrl = rawUrl.toLowerCase();
+      const parsed = safeUrl(rawUrl);
+      const pathname = parsed?.pathname.toLowerCase() ?? lowerUrl;
+
+      if (isEmbedUrl(parsed, lowerUrl)) {
+        return 'embed';
+      }
+
+      if (PDF_EXT_RE.test(pathname) || pathname.includes('/documents/')) {
+        return 'pdf';
+      }
+
+      if (VIDEO_EXT_RE.test(pathname)) {
+        return 'video';
+      }
+
+      if (IMAGE_EXT_RE.test(pathname)) {
+        return 'image';
+      }
+
+      if (mediaMode === 'document') {
+        return 'unknown';
+      }
+
+      if (mediaMode === 'video') {
+        return 'unknown';
+      }
+
+      return 'unknown';
+    }
+
+    function fallbackKindForMode() {
+      if (mediaMode === 'document') return 'pdf';
+      if (mediaMode === 'video') return 'video';
+      return 'image';
+    }
+
+    function safeUrl(rawUrl: string) {
+      try {
+        return new URL(rawUrl);
+      } catch {
+        return null;
+      }
+    }
+
+    function isEmbedUrl(parsed: URL | null, lowerUrl: string) {
+      const host = parsed?.hostname.toLowerCase() ?? '';
+      return host.includes('youtube.com')
+        || host.includes('youtu.be')
+        || host.includes('vimeo.com')
+        || lowerUrl.includes('youtube.com/embed/');
+    }
+
+    function normalizeEmbedUrl(rawUrl: string) {
+      const parsed = safeUrl(rawUrl);
+      if (!parsed) {
+        return rawUrl;
+      }
+
+      const host = parsed.hostname.toLowerCase();
+      if (host.includes('youtu.be')) {
+        const videoId = parsed.pathname.split('/').filter(Boolean)[0];
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : rawUrl;
+      }
+
+      if (host.includes('youtube.com')) {
+        if (parsed.pathname.includes('/embed/')) {
+          return rawUrl;
+        }
+
+        const videoId = parsed.searchParams.get('v');
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : rawUrl;
+      }
+
+      if (host.includes('vimeo.com')) {
+        const videoId = parsed.pathname.split('/').filter(Boolean)[0];
+        return videoId ? `https://player.vimeo.com/video/${videoId}` : rawUrl;
+      }
+
+      return rawUrl;
+    }
+
+    function getFileName(rawUrl: string) {
+      try {
+        const parsed = new URL(rawUrl);
+        const lastSegment = parsed.pathname.split('/').filter(Boolean).pop();
+        return decodeURIComponent(lastSegment || 'archivo');
+      } catch {
+        return 'archivo';
+      }
+    }
+  });
+</script>

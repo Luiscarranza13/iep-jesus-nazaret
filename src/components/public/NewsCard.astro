@@ -1,0 +1,69 @@
+---
+import { formatDateShort } from '../../utils/helpers';
+
+interface Props {
+  title: string;
+  summary?: string | null;
+  image_url?: string | null;
+  slug: string;
+  published_at?: string | null;
+  type?: string | null;
+  featured?: boolean;
+  isNews?: boolean;
+}
+
+const { title, summary, image_url, slug, published_at, type, featured, isNews = false } = Astro.props;
+const href = isNews ? `/noticias/${slug}` : `/blog/${slug}`;
+const placeholder = `https://placehold.co/800x500/7c3aed/ffffff?text=${encodeURIComponent(title.substring(0, 20))}`;
+---
+
+<article class="card group flex flex-col h-full">
+  <!-- Image -->
+  <div class="relative overflow-hidden aspect-video">
+    <img
+      src={image_url || placeholder}
+      alt={title}
+      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      loading="lazy"
+    />
+    {featured && (
+      <span class="absolute top-3 left-3 badge-primary text-xs font-bold px-3 py-1 rounded-full">
+        Destacado
+      </span>
+    )}
+    {type && (
+      <span class="absolute top-3 right-3 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">
+        {type}
+      </span>
+    )}
+  </div>
+
+  <!-- Content -->
+  <div class="p-5 flex flex-col flex-1">
+    {published_at && (
+      <p class="text-xs text-gray-400 font-medium mb-2 flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        {formatDateShort(published_at)}
+      </p>
+    )}
+
+    <h3 class="font-heading font-bold text-gray-900 text-lg leading-snug mb-3 group-hover:text-primary-700 transition-colors line-clamp-2">
+      {title}
+    </h3>
+
+    {summary && (
+      <p class="text-gray-500 text-sm leading-relaxed flex-1 line-clamp-3 mb-4">
+        {summary}
+      </p>
+    )}
+
+    <a href={href} class="inline-flex items-center gap-1.5 text-primary-700 font-semibold text-sm hover:gap-3 transition-all duration-200 mt-auto">
+      Leer más
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </a>
+  </div>
+</article>

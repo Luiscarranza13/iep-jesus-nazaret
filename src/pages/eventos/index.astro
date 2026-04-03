@@ -1,0 +1,107 @@
+---
+import PublicLayout from '../../layouts/PublicLayout.astro';
+import { getAllEvents } from '../../services/content';
+import { formatDate } from '../../utils/helpers';
+
+const { data: events } = await getAllEvents();
+
+const eventsToShow = events || [];
+const today = new Date().toISOString().split('T')[0];
+const upcoming = eventsToShow.filter((e: any) => e.event_date >= today);
+const past = eventsToShow.filter((e: any) => e.event_date < today);
+---
+
+<PublicLayout
+  title="Eventos y Actividades – I.E. Jesús de Nazaret"
+  description="Calendario de actividades, eventos y fechas importantes de la I.E. Jesús de Nazaret en Bellavista, Celendín."
+>
+  <div class="bg-gradient-primary text-white py-14 sm:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4">Eventos y Actividades</h1>
+      <p class="text-white/80 text-base sm:text-xl max-w-2xl mx-auto">
+        Calendario escolar y actividades de nuestra institución
+      </p>
+    </div>
+  </div>
+
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      {eventsToShow.length === 0 && (
+        <div class="text-center py-20 text-gray-400">
+          <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="text-lg font-medium">No hay eventos programados aún</p>
+          <p class="text-sm mt-1">El calendario de actividades se publicará próximamente</p>
+        </div>
+      )}
+
+      {upcoming.length > 0 && (
+        <div class="mb-16">
+          <h2 class="font-heading font-bold text-2xl text-gray-900 mb-8 flex items-center gap-3">
+            <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+            Próximas Actividades
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {upcoming.map((event: any) => (
+              <a href={`/eventos/${event.slug}`} class="card p-6 flex gap-5 hover:-translate-y-1 transition-all duration-300 group">
+                <div class="flex-shrink-0 text-center bg-primary-100 rounded-2xl p-4 w-20">
+                  <p class="text-2xl font-heading font-bold text-primary-800">
+                    {new Date(event.event_date + 'T00:00:00').getDate()}
+                  </p>
+                  <p class="text-xs text-primary-600 font-medium uppercase">
+                    {new Date(event.event_date + 'T00:00:00').toLocaleDateString('es-PE', { month: 'short' })}
+                  </p>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-heading font-bold text-gray-900 text-base leading-snug mb-2 group-hover:text-primary-700 transition-colors">
+                    {event.title}
+                  </h3>
+                  {event.description && (
+                    <p class="text-gray-500 text-sm line-clamp-2 mb-3">{event.description}</p>
+                  )}
+                  <div class="flex flex-wrap gap-3 text-xs text-gray-400">
+                    {event.event_time && (
+                      <span class="flex items-center gap-1">🕐 {event.event_time}</span>
+                    )}
+                    {event.location && (
+                      <span class="flex items-center gap-1">📍 {event.location}</span>
+                    )}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {past.length > 0 && (
+        <div>
+          <h2 class="font-heading font-bold text-2xl text-gray-900 mb-8 flex items-center gap-3">
+            <span class="w-3 h-3 bg-gray-400 rounded-full"></span>
+            Actividades Realizadas
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-75">
+            {past.map((event: any) => (
+              <a href={`/eventos/${event.slug}`} class="card p-6 flex gap-5 hover:opacity-100 transition-all">
+                <div class="flex-shrink-0 text-center bg-gray-100 rounded-2xl p-4 w-20">
+                  <p class="text-2xl font-heading font-bold text-gray-600">
+                    {new Date(event.event_date + 'T00:00:00').getDate()}
+                  </p>
+                  <p class="text-xs text-gray-500 font-medium uppercase">
+                    {new Date(event.event_date + 'T00:00:00').toLocaleDateString('es-PE', { month: 'short' })}
+                  </p>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-heading font-bold text-gray-700 text-base mb-1">{event.title}</h3>
+                  {event.location && <p class="text-xs text-gray-400">📍 {event.location}</p>}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+</PublicLayout>

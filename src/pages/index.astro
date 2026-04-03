@@ -1,0 +1,333 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+import HeroSection from '../components/public/HeroSection.astro';
+import SectionHeader from '../components/public/SectionHeader.astro';
+import NewsCard from '../components/public/NewsCard.astro';
+import Icon from '../components/common/Icon.astro';
+import { getSettings } from '../services/settings';
+import { getFeaturedNews, getUpcomingEvents, getGalleries } from '../services/content';
+import { formatDate, whatsAppUrl } from '../utils/helpers';
+
+const settings = await getSettings();
+const { data: featuredNews } = await getFeaturedNews(3);
+const { data: upcomingEvents } = await getUpcomingEvents(4);
+const { data: galleries } = await getGalleries();
+const featuredGalleries = galleries?.slice(0, 4) || [];
+
+const newsToShow = featuredNews || [];
+const eventsToShow = upcomingEvents || [];
+---
+
+<PublicLayout
+  title="I.E. Jesús de Nazaret – Bellavista, Celendín"
+  description="Institución Educativa Jesús de Nazaret, educación secundaria pública en Bellavista, Celendín, Cajamarca. Formando jóvenes con valores y preparación para el futuro."
+>
+  <!-- Hero -->
+  <HeroSection settings={settings} />
+
+  <!-- Bienvenida institucional -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div class="reveal-left">
+          <SectionHeader
+            tag="Bienvenidos"
+            title="Educación secundaria para el futuro de Bellavista"
+            subtitle=""
+            centered={false}
+          />
+          <p class="text-gray-600 leading-relaxed mb-5">
+            La I.E. Jesús de Nazaret es una institución educativa pública ubicada en Bellavista, provincia de Celendín, región Cajamarca. Ofrecemos educación secundaria gratuita y de calidad a jóvenes de 12 a 17 años, bajo la modalidad de Educación Básica Regular.
+          </p>
+          <p class="text-gray-600 leading-relaxed mb-8">
+            Contamos con docentes comprometidos, grupos reducidos de aproximadamente 20 estudiantes por aula y turnos de mañana y tarde, para adaptarnos a las necesidades de las familias de nuestra comunidad.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="/nosotros" class="btn-primary">Conoce nuestra institución</a>
+            <a href="/secundaria" class="btn-secondary">Nivel Secundaria</a>
+          </div>
+        </div>
+
+        <!-- Datos institucionales -->
+        <div class="grid grid-cols-2 gap-4 reveal-right">
+          {[
+            { icon: 'graduation-cap', color: 'bg-primary-100 text-primary-700', title: 'Solo Secundaria',   desc: 'Educación Básica Regular para jóvenes de 12 a 17 años' },
+            { icon: 'school',         color: 'bg-blue-100 text-blue-700',       title: 'Gestión Pública',   desc: 'Institución pública de acceso gratuito para la comunidad' },
+            { icon: 'clock',          color: 'bg-green-100 text-green-700',     title: 'Doble turno',       desc: 'Turnos de mañana y tarde para mayor flexibilidad familiar' },
+            { icon: 'users',          color: 'bg-violet-100 text-violet-700',   title: 'Grupos reducidos',  desc: 'Aproximadamente 20 estudiantes por aula para mejor atención' },
+          ].map(item => (
+            <div class="card p-6 hover:-translate-y-1 transition-transform duration-300">
+              <div class={`w-12 h-12 ${item.color} rounded-xl flex items-center justify-center mb-3`}>
+                <Icon name={item.icon} class="w-6 h-6" />
+              </div>
+              <h3 class="font-heading font-bold text-gray-900 text-sm mb-2">{item.title}</h3>
+              <p class="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Misión y Visión -->
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <SectionHeader
+        tag="Identidad Institucional"
+        title="Misión, Visión y Valores"
+        subtitle="Los principios que orientan nuestra labor educativa cada día"
+      />
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="card p-8 border-t-4 border-primary-600">
+          <div class="w-14 h-14 bg-primary-100 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-xl text-gray-900 mb-4">Misión</h3>
+          <p class="text-gray-600 leading-relaxed text-sm">{settings.mission}</p>
+        </div>
+
+        <div class="card p-8 border-t-4 border-secondary-600">
+          <div class="w-14 h-14 bg-secondary-100 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-secondary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-xl text-gray-900 mb-4">Visión</h3>
+          <p class="text-gray-600 leading-relaxed text-sm">{settings.vision}</p>
+        </div>
+
+        <div class="card p-8 border-t-4 border-yellow-500">
+          <div class="w-14 h-14 bg-yellow-100 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-xl text-gray-900 mb-4">Valores</h3>
+          <div class="flex flex-wrap gap-2">
+            {(settings.values_text || '').split('•').filter(Boolean).map(v => (
+              <span class="badge-primary text-xs">{v.trim()}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nivel Secundaria (reemplaza la sección de múltiples niveles) -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <SectionHeader
+        tag="Oferta Educativa"
+        title="Educación Secundaria"
+        subtitle="Formación integral para jóvenes de 12 a 17 años en Bellavista, Celendín"
+      />
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="bg-gradient-to-br from-primary-600 to-primary-800 rounded-3xl p-10 text-white">
+          <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+            <Icon name="graduation-cap" class="w-8 h-8 text-white" />
+          </div>
+          <h3 class="font-heading font-bold text-3xl mb-2">Nivel Secundaria</h3>
+          <p class="text-white/80 mb-6">1.° a 5.° grado · 12 a 17 años</p>
+          <div class="space-y-3">
+            {[
+              'Educación Básica Regular (EBR)',
+              'Turnos mañana y tarde',
+              'Grupos de ~20 estudiantes por aula',
+              'Gestión pública y gratuita',
+              'Código modular: 0748194',
+            ].map(item => (
+              <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-white/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="text-white/90 text-sm">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <h3 class="font-heading font-bold text-2xl text-gray-900">¿Qué ofrecemos?</h3>
+          <div class="space-y-4">
+            {[
+              { icon: 'book-open', color: 'bg-blue-100 text-blue-700',    title: 'Formación académica sólida', desc: 'Currículo nacional con énfasis en comprensión lectora, matemáticas, ciencias y humanidades.' },
+              { icon: 'lightbulb', color: 'bg-yellow-100 text-yellow-700', title: 'Pensamiento crítico',        desc: 'Metodologías que fomentan el análisis, la reflexión y la resolución de problemas.' },
+              { icon: 'heart',     color: 'bg-red-100 text-red-700',       title: 'Formación en valores',       desc: 'Respeto, responsabilidad y solidaridad como ejes del desarrollo personal.' },
+              { icon: 'target',    color: 'bg-green-100 text-green-700',   title: 'Preparación para el futuro', desc: 'Orientación para estudios superiores o inserción al mundo laboral.' },
+            ].map(item => (
+              <div class="flex gap-4 p-4 rounded-xl border border-gray-100 hover:border-primary-200 hover:bg-primary-50/30 transition-all">
+                <div class={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                  <Icon name={item.icon} class="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-900 text-sm mb-1">{item.title}</h4>
+                  <p class="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <a href="/secundaria" class="btn-primary inline-flex">Más información</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Noticias recientes -->
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-end justify-between mb-12">
+        <SectionHeader
+          tag="Actualidad"
+          title="Últimas Noticias"
+          subtitle="Mantente informado sobre las actividades de nuestra institución"
+          centered={false}
+        />
+        <a href="/noticias" class="hidden md:inline-flex btn-ghost text-primary-700 font-semibold">
+          Ver todas →
+        </a>
+      </div>
+
+      {newsToShow.length > 0 ? (
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {newsToShow.map(item => (
+            <NewsCard
+              title={item.title}
+              summary={item.summary}
+              image_url={item.image_url}
+              slug={item.slug}
+              published_at={item.published_at}
+              type={item.type}
+              featured={item.featured}
+              isNews={true}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-16 text-gray-400">
+          <p class="text-lg font-medium">Próximamente publicaremos noticias</p>
+          <p class="text-sm mt-1">Vuelve pronto para estar al día con nuestra institución</p>
+        </div>
+      )}
+
+      <div class="text-center mt-10 md:hidden">
+        <a href="/noticias" class="btn-secondary">Ver todas las noticias</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Próximos eventos -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-end justify-between mb-12">
+        <SectionHeader
+          tag="Agenda"
+          title="Próximas Actividades"
+          subtitle="Fechas importantes del calendario escolar"
+          centered={false}
+        />
+        <a href="/eventos" class="hidden md:inline-flex btn-ghost text-primary-700 font-semibold">
+          Ver todas →
+        </a>
+      </div>
+
+      {eventsToShow.length > 0 ? (
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {eventsToShow.map((event: any) => (
+            <a href={`/eventos/${event.slug}`} class="card p-6 hover:-translate-y-1 transition-all duration-300 group">
+              <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-200 transition-colors">
+                <svg class="w-6 h-6 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p class="text-xs text-primary-600 font-semibold mb-2">
+                {formatDate(event.event_date, { day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+              <h3 class="font-heading font-bold text-gray-900 text-base leading-snug mb-2 group-hover:text-primary-700 transition-colors">
+                {event.title}
+              </h3>
+              {event.location && (
+                <p class="text-xs text-gray-400 flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  </svg>
+                  {event.location}
+                </p>
+              )}
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-16 text-gray-400">
+          <p class="text-lg font-medium">No hay eventos programados aún</p>
+          <p class="text-sm mt-1">El calendario de actividades se publicará próximamente</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Galería destacada -->
+  {featuredGalleries.length > 0 && (
+    <section class="py-20 bg-gray-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionHeader
+          tag="Galería"
+          title="Momentos de nuestra institución"
+          subtitle="Actividades, logros y vida escolar de la I.E. Jesús de Nazaret"
+        />
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {featuredGalleries.map((gallery: any) => (
+            <a href={`/galeria/${gallery.slug}`} class="group relative aspect-square overflow-hidden rounded-2xl">
+              <img
+                src={gallery.cover_image_url || `https://placehold.co/400x400/6d28d9/ffffff?text=${encodeURIComponent(gallery.title)}`}
+                alt={gallery.title}
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                <p class="text-white font-semibold text-sm">{gallery.title}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div class="text-center mt-10">
+          <a href="/galeria" class="btn-primary">Ver galería completa</a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA contacto -->
+  <section class="py-20 bg-gradient-primary text-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="font-heading font-bold text-4xl md:text-5xl mb-6">
+        ¿Deseas más información?
+      </h2>
+      <p class="text-white/80 text-xl mb-10 leading-relaxed">
+        Contáctanos para conocer más sobre nuestra institución, el proceso de matrícula o las actividades del año escolar.
+      </p>
+      <div class="flex flex-wrap gap-4 justify-center">
+        <a href="/contacto" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-primary-800 font-bold rounded-xl hover:bg-gray-50 transition-all shadow-xl">
+          Enviar consulta
+        </a>
+        {settings.facebook && (
+          <a
+            href={settings.facebook}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-xl"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            Seguir en Facebook
+          </a>
+        )}
+      </div>
+    </div>
+  </section>
+</PublicLayout>

@@ -1,0 +1,80 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import ImageUploader from '../../../components/admin/ImageUploader.astro';
+---
+
+<AdminLayout title="Nuevo Documento" activeSection="documentos">
+  <div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-3 mb-6 animate-fade-in-down">
+      <a href="/admin/documentos" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+        <Icon name="arrow-left" class="w-5 h-5" />
+      </a>
+      <h2 class="font-heading font-bold text-xl text-gray-900">Nuevo Documento</h2>
+    </div>
+
+    <div class="card-admin p-6 space-y-5 animate-fade-in-up">
+      <div>
+        <label class="label" for="title">Título *</label>
+        <input type="text" id="title" class="input" placeholder="Nombre del documento" />
+      </div>
+      <div>
+        <label class="label" for="description">Descripción</label>
+        <textarea id="description" rows="3" class="input resize-none" placeholder="Descripción breve del documento..."></textarea>
+      </div>
+      <ImageUploader fieldId="file_url" bucket="documents" label="Archivo PDF *" accept=".pdf,application/pdf" />
+      <div>
+        <label class="label" for="type">Tipo de documento</label>
+        <select id="type" class="input">
+          <option value="">General</option>
+          <option value="Comunicados">Comunicados</option>
+          <option value="Reglamentos">Reglamentos</option>
+          <option value="Calendario">Calendario</option>
+          <option value="Horarios">Horarios</option>
+          <option value="Orientaciones">Orientaciones</option>
+          <option value="Avisos">Avisos</option>
+          <option value="Informes">Informes</option>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="published_at">Fecha de publicación</label>
+        <input type="date" id="published_at" class="input" />
+      </div>
+      <button id="save-btn" class="btn-primary w-full justify-center py-3 gap-2">
+        <Icon name="upload" class="w-4 h-4" />
+        Guardar documento
+      </button>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { getSession } from '../../../lib/auth';
+  import { upsertDocument } from '../../../services/content';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  const get = (id: string) => (document.getElementById(id) as any)?.value;
+
+  document.getElementById('save-btn')?.addEventListener('click', async () => {
+    const title = get('title'); const file_url = get('file_url');
+    if (!title || !file_url) { (window as any).showToast('Título y URL del archivo son requeridos', 'error'); return; }
+    (window as any).showLoading('Guardando documento...');
+    try {
+      const { error } = await upsertDocument({
+        title,
+        description:  get('description') || null,
+        file_url,
+        type:         get('type') || null,
+        published_at: get('published_at') || new Date().toISOString(),
+      });
+      if (error) throw error;
+      (window as any).closeLoading();
+      (window as any).showToast('Documento guardado correctamente', 'success');
+      setTimeout(() => window.location.href = '/admin/documentos', 1200);
+    } catch (e: any) {
+      (window as any).closeLoading();
+      (window as any).showError('Error al guardar', e.message);
+    }
+  });
+</script>

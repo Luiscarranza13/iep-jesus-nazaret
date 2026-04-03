@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.output/
+
+# Environment variables - NUNCA subir al repo
+.env
+.env.local
+.env.production
+
+# Astro
+.astro/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/

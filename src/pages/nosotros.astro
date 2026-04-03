@@ -1,0 +1,170 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+import SectionHeader from '../components/public/SectionHeader.astro';
+import { getSettings } from '../services/settings';
+
+const settings = await getSettings();
+---
+
+<PublicLayout
+  title="Nosotros – I.E. Jesús de Nazaret, Bellavista"
+  description="Conoce la historia, misión, visión y valores de la I.E. Jesús de Nazaret, institución educativa secundaria pública en Bellavista, Celendín, Cajamarca."
+>
+  <!-- Encabezado -->
+  <div class="bg-gradient-primary text-white py-14 sm:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4">Nosotros</h1>
+      <p class="text-white/80 text-base sm:text-xl max-w-2xl mx-auto">
+        Conoce nuestra historia, identidad y el compromiso que nos une como comunidad educativa
+      </p>
+    </div>
+  </div>
+
+  <!-- Ficha institucional rápida -->
+  <section class="py-10 bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        {[
+          { label: 'Nombre', value: 'I.E. Jesús de Nazaret' },
+          { label: 'Nivel', value: 'Secundaria' },
+          { label: 'Gestión', value: 'Pública' },
+          { label: 'Modalidad', value: 'EBR' },
+          { label: 'Turno', value: 'Mañana y tarde' },
+          { label: 'Cód. modular', value: '0748194' },
+        ].map(item => (
+          <div class="text-center p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-400 font-medium mb-1">{item.label}</p>
+            <p class="font-heading font-bold text-gray-900 text-sm">{item.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Historia -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <SectionHeader tag="Historia" title="Nuestra Historia" centered={false} />
+          <div class="space-y-4 text-gray-600 leading-relaxed">
+            {settings.history.split('\n\n').map(paragraph => (
+              <p>{paragraph}</p>
+            ))}
+          </div>
+        </div>
+        <div class="relative">
+          <div class="rounded-3xl overflow-hidden shadow-2xl">
+            <img
+              src="https://scontent.flim9-1.fna.fbcdn.net/v/t39.30808-6/652324996_892890870231581_6416258328698868133_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=cc71e4&_nc_eui2=AeECcOT7_fOXc-6abkNEhLzYGejVJT0KKIQZ6NUlPQoohHcbM4oglBuOdjM6Jh8L0xYevS1BXbq9TApryJ5aFeMV&_nc_ohc=U4Xjy3NRn5kQ7kNvwFTN-LC&_nc_oc=AdpMqRuWN5ENeWSkT-KxxJTxKb2eunHO4yGNWPcIiwJX6NN3mVU_lR43fVBi474vDz0&_nc_zt=23&_nc_ht=scontent.flim9-1.fna&_nc_gid=hhYWBTTQSPqPUzZYU25DuQ&_nc_ss=7a3a8&oh=00_Af12Cv6uDbH0ySTdKXFQ_aybgc8MsYn64jxQxh4qaZQaEQ&oe=69D4ACC0"
+              alt="Equipo docente I.E. Jesús de Nazaret"
+              class="w-full h-80 object-cover"
+              crossorigin="anonymous"
+            />
+          </div>
+          <div class="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-5 border border-gray-100">
+            <p class="font-heading font-bold text-2xl text-primary-700">EBR</p>
+            <p class="text-gray-500 text-xs">Educación Básica</p>
+            <p class="text-gray-500 text-xs">Regular · Pública</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Misión, Visión, Valores -->
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <SectionHeader
+        tag="Identidad"
+        title="Misión, Visión y Valores"
+        subtitle="Los principios que orientan nuestra labor educativa"
+      />
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div class="card p-8 border-t-4 border-primary-600">
+          <div class="w-14 h-14 bg-primary-100 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-xl mb-4">Misión</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">{settings.mission}</p>
+        </div>
+
+        <div class="card p-8 border-t-4 border-secondary-600">
+          <div class="w-14 h-14 bg-secondary-100 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-secondary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-xl mb-4">Visión</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">{settings.vision}</p>
+        </div>
+
+        <div class="card p-8 border-t-4 border-yellow-500">
+          <div class="w-14 h-14 bg-yellow-100 rounded-2xl flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-xl mb-4">Valores</h3>
+          <div class="flex flex-wrap gap-2">
+            {(settings.values_text || '').split('•').filter(Boolean).map(v => (
+              <span class="badge-primary">{v.trim()}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mensaje institucional -->
+  <section class="py-20 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <SectionHeader tag="Dirección" title="Mensaje Institucional" />
+      <div class="card p-10">
+        <div class="flex flex-col sm:flex-row gap-8 items-start">
+          <!-- Foto real del director -->
+          <div class="flex-shrink-0">
+            <img
+              src="https://scontent.flim9-1.fna.fbcdn.net/v/t39.30808-6/287194106_104240939096582_2519527103714913921_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeEicJlqnEuRlyjoKt7whkja2IWO8TXpas_YhY7xNelqzyt4H3yqMTyv6mcVPKAc0XTP3KFIT-eTXRuP40MbXt2A&_nc_ohc=5kb-T5seVVgQ7kNvwG0pTxg&_nc_oc=AdoFDBVseZb475n-M8FPFJ0jAipklTspZgDHvI3nqWJcTQjH9sEVU31pQtguJgOCoDM&_nc_zt=23&_nc_ht=scontent.flim9-1.fna&_nc_gid=p6zA30yaN7fLUV022BbZBA&_nc_ss=7a3a8&oh=00_Af1wKdKnchNa06zQN_9Uzk74JSxqhzZXNd_VfL_a8SFqBA&oe=69D4AEDD"
+              alt="Equipo docente I.E. Jesús de Nazaret"
+              class="w-24 h-24 rounded-2xl object-cover shadow-lg"
+              crossorigin="anonymous"
+            />
+          </div>
+          <div>
+            <blockquote class="text-gray-600 text-lg leading-relaxed italic mb-6">
+              "La I.E. Jesús de Nazaret es más que una institución educativa: es un espacio donde los jóvenes de Bellavista y sus alrededores encuentran la oportunidad de crecer, aprender y prepararse para el futuro. Nuestro compromiso es brindar una educación de calidad, con docentes dedicados y un ambiente que favorezca el desarrollo integral de cada estudiante. Invitamos a las familias a ser parte activa de esta comunidad educativa."
+            </blockquote>
+            <p class="font-heading font-bold text-gray-900">Dirección General</p>
+            <p class="text-gray-500 text-sm">I.E. Jesús de Nazaret · Bellavista, Celendín</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ubicación -->
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <SectionHeader tag="Ubicación" title="¿Dónde estamos?" subtitle="Bellavista, distrito y provincia de Celendín, región Cajamarca" />
+      <div class="card p-8 flex flex-col sm:flex-row gap-6 items-center text-left">
+        <div class="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-8 h-8 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="font-heading font-bold text-gray-900 text-lg mb-1">I.E. Jesús de Nazaret</p>
+          <p class="text-gray-600">Bellavista, distrito de Celendín</p>
+          <p class="text-gray-600">Provincia de Celendín, región Cajamarca, Perú</p>
+          <p class="text-gray-400 text-sm mt-2">Código modular: 0748194</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</PublicLayout>

@@ -1,0 +1,137 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import AdminSidebar from '../components/admin/AdminSidebar.astro';
+import AdminNavbar from '../components/admin/AdminNavbar.astro';
+
+interface Props {
+  title?: string;
+  activeSection?: string;
+}
+
+const { title = 'Panel Admin', activeSection = '' } = Astro.props;
+---
+
+<BaseLayout title={`${title} | Admin – I.E. Jesús de Nazaret`} noIndex={true}>
+  <!-- Overlay para móvil -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden backdrop-blur-sm"></div>
+
+  <div class="flex h-screen bg-gray-50 overflow-hidden">
+    <!-- Sidebar: en móvil se oculta y aparece como drawer -->
+    <div id="admin-sidebar-wrapper" class="fixed lg:relative inset-y-0 left-0 z-40 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex-shrink-0">
+      <AdminSidebar activeSection={activeSection} />
+    </div>
+
+    <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+      <AdminNavbar title={title} />
+      <main class="flex-1 overflow-y-auto p-4 sm:p-6 animate-fade-in">
+        <slot />
+      </main>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import Swal from 'sweetalert2';
+
+  // ── Sidebar móvil ──────────────────────────────────────────────────────────
+  const overlay = document.getElementById('sidebar-overlay');
+  const sidebarWrapper = document.getElementById('admin-sidebar-wrapper');
+
+  function openSidebar() {
+    sidebarWrapper?.classList.remove('-translate-x-full');
+    overlay?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    sidebarWrapper?.classList.add('-translate-x-full');
+    overlay?.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  overlay?.addEventListener('click', closeSidebar);
+  (window as any).openAdminSidebar  = openSidebar;
+  (window as any).closeAdminSidebar = closeSidebar;
+
+  // ── Toast propio (sin SweetAlert) ─────────────────────────────────────────
+  const ICONS: Record<string, string> = {
+    success: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`,
+    error:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    warning: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    info:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  };
+
+  function getContainer() {
+    let c = document.getElementById('toast-container');
+    if (!c) {
+      c = document.createElement('div');
+      c.id = 'toast-container';
+      document.body.appendChild(c);
+    }
+    return c;
+  }
+
+  (window as any).showToast = (message: string, type: 'success'|'error'|'warning'|'info' = 'info', duration = 3500) => {
+    const container = getContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast-item ${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon">${ICONS[type] ?? ICONS.info}</span>
+      <span>${message}</span>
+    `;
+    // Barra de progreso animada
+    const bar = toast.querySelector('::after') as HTMLElement;
+    toast.style.setProperty('--duration', `${duration}ms`);
+    toast.querySelector('::after')?.setAttribute('style', `animation-duration: ${duration}ms`);
+
+    // Hack para la barra: usar un elemento real
+    const progress = document.createElement('span');
+    progress.style.cssText = `position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 1rem 1rem;animation:toastProgress ${duration}ms linear forwards;`;
+    const colors: Record<string, string> = { success:'#16a34a', error:'#dc2626', warning:'#d97706', info:'#2563eb' };
+    progress.style.background = colors[type] ?? '#6d28d9';
+    toast.appendChild(progress);
+
+    container.appendChild(toast);
+
+    // Auto-remove
+    const timer = setTimeout(() => removeToast(toast), duration);
+    toast.addEventListener('click', () => { clearTimeout(timer); removeToast(toast); });
+  };
+
+  function removeToast(toast: HTMLElement) {
+    toast.classList.add('removing');
+    toast.addEventListener('animationend', () => toast.remove(), { once: true });
+  }
+
+  // ── SweetAlert2 — solo para modales (confirmaciones, errores, loading) ────
+  const SwalBase = Swal.mixin({
+    customClass: { popup: 'swal2-popup', confirmButton: 'swal2-confirm', cancelButton: 'swal2-cancel' },
+    buttonsStyling: false,
+    showClass: { popup: 'animate-scale-in' },
+    hideClass: { popup: '' },
+  });
+
+  (window as any).confirmDelete = async (title: string, text?: string): Promise<boolean> => {
+    const result = await SwalBase.fire({
+      title: `¿Eliminar "${title}"?`,
+      text: text || 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+    });
+    return result.isConfirmed;
+  };
+
+  (window as any).showSuccess = (title: string, text?: string) =>
+    SwalBase.fire({ title, text, icon: 'success', confirmButtonText: 'Aceptar' });
+
+  (window as any).showError = (title: string, text?: string) =>
+    SwalBase.fire({ title, text, icon: 'error', confirmButtonText: 'Entendido' });
+
+  (window as any).showLoading = (title = 'Procesando...') =>
+    Swal.fire({ title, allowOutsideClick: false, didOpen: () => Swal.showLoading(),
+      customClass: { popup: 'swal2-popup' } });
+
+  (window as any).closeLoading = () => Swal.close();
+</script>

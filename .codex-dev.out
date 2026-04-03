@@ -1,0 +1,16 @@
+
+> iep-jesus-nazaret@1.0.0 dev
+> astro dev --host
+
+17:54:07 [types] Generated 2ms
+17:54:07 [vite] Port 4321 is in use, trying another one...
+
+ astro  v4.16.19 ready in 600 ms
+
+┃ Local    http://localhost:4322/
+┃ Network  http://192.168.56.1:4322/
+           http://192.168.0.103:4322/
+
+17:54:07 watching for file changes...
+�Desea terminar el trabajo por lotes (S/N)? 
+^C

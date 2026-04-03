@@ -1,0 +1,84 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import { getGalleries } from '../../../services/content';
+
+const { data: galleries } = await getGalleries();
+---
+
+<AdminLayout title="Galerías" activeSection="galerias">
+  <div class="flex items-center justify-between mb-6 animate-fade-in-down">
+    <p class="text-gray-500 text-sm">{galleries?.length || 0} galerías en total</p>
+    <a href="/admin/galerias/nuevo" class="btn-primary text-sm py-2.5 gap-2">
+      <Icon name="plus" class="w-4 h-4" />
+      Nueva galería
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {galleries && galleries.length > 0 ? galleries.map((gallery: any, i: number) => (
+      <div class="card overflow-hidden group animate-fade-in-up" style={`animation-delay: ${i * 60}ms`}>
+        <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary-100 to-secondary-100">
+          {gallery.cover_image_url ? (
+            <img src={gallery.cover_image_url} alt={gallery.title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+          ) : (
+            <div class="w-full h-full flex flex-col items-center justify-center text-primary-400 gap-2">
+              <Icon name="image" class="w-10 h-10 opacity-40" />
+              <p class="text-xs text-primary-500 font-medium">Sin portada</p>
+            </div>
+          )}
+        </div>
+        <div class="p-4">
+          <h3 class="font-semibold text-gray-900 mb-1 line-clamp-1">{gallery.title}</h3>
+          {gallery.description && <p class="text-gray-500 text-xs line-clamp-2 mb-3">{gallery.description}</p>}
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-400 flex items-center gap-1">
+              <Icon name="images" class="w-3.5 h-3.5" />
+              {Array.isArray(gallery.photos) ? gallery.photos[0]?.count || 0 : 0} fotos
+            </span>
+            <div class="flex gap-1">
+              <a href={`/admin/galerias/${gallery.id}`} class="p-1.5 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
+                <Icon name="pencil" class="w-4 h-4" />
+              </a>
+              <button class="delete-btn p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={gallery.id} data-title={gallery.title} title="Eliminar">
+                <Icon name="trash-2" class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )) : (
+      <div class="col-span-3 card p-20 text-center text-gray-400 animate-fade-in-up">
+        <Icon name="image" class="w-14 h-14 opacity-30 mx-auto mb-4" />
+        <p class="font-medium text-lg mb-4">No hay galerías aún</p>
+        <a href="/admin/galerias/nuevo" class="btn-primary inline-flex">Crear primera galería</a>
+      </div>
+    )}
+  </div>
+</AdminLayout>
+
+<script>
+  import { deleteGallery } from '../../../services/content';
+  import { getSession } from '../../../lib/auth';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id    = Number((btn as HTMLElement).dataset.id);
+      const title = (btn as HTMLElement).dataset.title || '';
+      if (!await (window as any).confirmDelete(title, 'Se eliminarán también todas las fotos de esta galería.')) return;
+      (window as any).showLoading('Eliminando galería...');
+      try {
+        const { error } = await deleteGallery(id);
+        if (error) throw error;
+        (window as any).closeLoading();
+        (window as any).showToast('Galería eliminada', 'success');
+        setTimeout(() => location.reload(), 1200);
+      } catch (e: any) {
+        (window as any).closeLoading();
+        (window as any).showError('Error al eliminar', e.message);
+      }
+    });
+  });
+</script>

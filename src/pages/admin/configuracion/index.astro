@@ -1,0 +1,252 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import ImageUploader from '../../../components/admin/ImageUploader.astro';
+import { getSettings } from '../../../services/settings';
+
+const settings = await getSettings();
+
+function toYoutubeEmbedUrl(url?: string | null) {
+  if (!url) return '';
+
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+
+    if (host.includes('youtu.be')) {
+      const videoId = parsed.pathname.split('/').filter(Boolean)[0];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+    }
+
+    if (host.includes('youtube.com')) {
+      if (parsed.pathname.includes('/embed/')) {
+        return url;
+      }
+
+      const videoId = parsed.searchParams.get('v');
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+    }
+  } catch {
+    return '';
+  }
+
+  return '';
+}
+
+const youtubeEmbedUrl = toYoutubeEmbedUrl(settings.youtube);
+---
+
+<AdminLayout title="Configuración" activeSection="configuracion">
+  <div class="max-w-3xl mx-auto space-y-6">
+
+    <!-- Nota -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 flex items-start gap-3 animate-fade-in-down">
+      <Icon name="info" class="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" />
+      <div>
+        <p class="font-semibold mb-1">I.E. Jesús de Nazaret – Bellavista, Celendín</p>
+        <p>Institución educativa pública · Nivel Secundaria · Código modular: 0748194. Los cambios se reflejan en el sitio web público.</p>
+      </div>
+    </div>
+
+    <!-- Información institucional -->
+    <div class="card-admin p-6 animate-fade-in-up">
+      <div class="flex items-center gap-2 mb-5">
+        <Icon name="school" class="w-5 h-5 text-primary-600" />
+        <h3 class="font-heading font-bold text-lg text-gray-900">Información Institucional</h3>
+      </div>
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="label" for="school_name">Nombre del colegio</label>
+            <input type="text" id="school_name" class="input" value={settings.school_name} />
+          </div>
+          <div>
+            <label class="label" for="slogan">Lema institucional</label>
+            <input type="text" id="slogan" class="input" value={settings.slogan || ''} />
+          </div>
+        </div>
+        <div>
+          <label class="label" for="history">Historia institucional</label>
+          <textarea id="history" rows="5" class="input resize-none">{settings.history || ''}</textarea>
+        </div>
+        <div>
+          <label class="label" for="mission">Misión</label>
+          <textarea id="mission" rows="3" class="input resize-none">{settings.mission || ''}</textarea>
+        </div>
+        <div>
+          <label class="label" for="vision">Visión</label>
+          <textarea id="vision" rows="3" class="input resize-none">{settings.vision || ''}</textarea>
+        </div>
+        <div>
+          <label class="label" for="values_text">Valores <span class="text-gray-400 font-normal">(separados por •)</span></label>
+          <input type="text" id="values_text" class="input" value={settings.values_text || ''} placeholder="Respeto • Responsabilidad • Honestidad" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Contacto -->
+    <div class="card-admin p-6 animate-fade-in-up delay-100">
+      <div class="flex items-center gap-2 mb-5">
+        <Icon name="phone" class="w-5 h-5 text-primary-600" />
+        <h3 class="font-heading font-bold text-lg text-gray-900">Datos de Contacto</h3>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="label" for="address">Dirección / Ubicación</label>
+          <input type="text" id="address" class="input" value={settings.address || ''} placeholder="Bellavista, Celendín, Cajamarca" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="label" for="phone">Teléfono</label>
+            <input type="text" id="phone" class="input" value={settings.phone || ''} placeholder="+51 076 ..." />
+          </div>
+          <div>
+            <label class="label" for="email">Correo electrónico</label>
+            <input type="email" id="email" class="input" value={settings.email || ''} placeholder="ie@ejemplo.edu.pe" />
+          </div>
+        </div>
+        <div>
+          <label class="label" for="whatsapp">WhatsApp <span class="text-gray-400 font-normal">(con código de país)</span></label>
+          <input type="text" id="whatsapp" class="input" value={settings.whatsapp || ''} placeholder="+51 999 999 999" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Redes sociales -->
+    <div class="card-admin p-6 animate-fade-in-up delay-200">
+      <div class="flex items-center gap-2 mb-5">
+        <Icon name="share-2" class="w-5 h-5 text-primary-600" />
+        <h3 class="font-heading font-bold text-lg text-gray-900">Redes Sociales</h3>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="label" for="facebook">Facebook URL</label>
+          <input type="url" id="facebook" class="input" value={settings.facebook || ''} placeholder="https://facebook.com/..." />
+        </div>
+        <div>
+          <label class="label" for="instagram">Instagram URL</label>
+          <input type="url" id="instagram" class="input" value={settings.instagram || ''} placeholder="https://instagram.com/..." />
+        </div>
+        <div>
+          <label class="label" for="youtube">YouTube URL</label>
+          <input type="url" id="youtube" class="input" value={settings.youtube || ''} placeholder="https://youtube.com/..." />
+        </div>
+        <div id="youtube-preview-wrap" class:list={['overflow-hidden rounded-xl border border-gray-200 bg-gray-50', !youtubeEmbedUrl && 'hidden']}>
+          <div class="border-b border-gray-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+            Vista previa del video
+          </div>
+          <iframe
+            id="youtube-preview"
+            class="aspect-video w-full"
+            src={youtubeEmbedUrl}
+            title="Vista previa de YouTube"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Imágenes -->
+    <div class="card-admin p-6 animate-fade-in-up delay-300">
+      <div class="flex items-center gap-2 mb-5">
+        <Icon name="image" class="w-5 h-5 text-primary-600" />
+        <h3 class="font-heading font-bold text-lg text-gray-900">Imágenes del sitio</h3>
+      </div>
+      <div class="space-y-4">
+        <ImageUploader fieldId="logo_url" bucket="logos" label="Logo del colegio" currentUrl={settings.logo_url || ''} />
+        <ImageUploader fieldId="hero_image_url" bucket="hero-images" label="Imagen de portada (hero)" currentUrl={settings.hero_image_url || ''} />
+      </div>
+    </div>
+
+    <!-- Guardar -->
+    <button id="save-settings-btn" class="btn-primary w-full justify-center py-4 text-base gap-2 animate-fade-in-up delay-400">
+      <Icon name="save" class="w-5 h-5" />
+      Guardar configuración
+    </button>
+  </div>
+</AdminLayout>
+
+<script>
+  import { getSession } from '../../../lib/auth';
+  import { updateSettings } from '../../../services/settings';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  const youtubeInput = document.getElementById('youtube') as HTMLInputElement | null;
+  const youtubePreviewWrap = document.getElementById('youtube-preview-wrap');
+  const youtubePreview = document.getElementById('youtube-preview') as HTMLIFrameElement | null;
+
+  function toYoutubeEmbedUrl(url: string) {
+    try {
+      const parsed = new URL(url);
+      const host = parsed.hostname.toLowerCase();
+
+      if (host.includes('youtu.be')) {
+        const videoId = parsed.pathname.split('/').filter(Boolean)[0];
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+      }
+
+      if (host.includes('youtube.com')) {
+        if (parsed.pathname.includes('/embed/')) {
+          return url;
+        }
+
+        const videoId = parsed.searchParams.get('v');
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+      }
+    } catch {
+      return '';
+    }
+
+    return '';
+  }
+
+  function refreshYoutubePreview() {
+    const embedUrl = toYoutubeEmbedUrl(youtubeInput?.value.trim() || '');
+    if (!youtubePreviewWrap || !youtubePreview) return;
+
+    if (!embedUrl) {
+      youtubePreviewWrap.classList.add('hidden');
+      youtubePreview.removeAttribute('src');
+      return;
+    }
+
+    youtubePreview.src = embedUrl;
+    youtubePreviewWrap.classList.remove('hidden');
+  }
+
+  youtubeInput?.addEventListener('input', refreshYoutubePreview);
+  refreshYoutubePreview();
+
+  document.getElementById('save-settings-btn')?.addEventListener('click', async () => {
+    const get = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement)?.value || null;
+    (window as any).showLoading('Guardando configuración...');
+    try {
+      const { error } = await updateSettings({
+        school_name:    get('school_name') || 'I.E. Jesús de Nazaret',
+        slogan:         get('slogan'),
+        history:        get('history'),
+        mission:        get('mission'),
+        vision:         get('vision'),
+        values_text:    get('values_text'),
+        address:        get('address'),
+        phone:          get('phone'),
+        email:          get('email'),
+        whatsapp:       get('whatsapp'),
+        facebook:       get('facebook'),
+        instagram:      get('instagram'),
+        youtube:        get('youtube'),
+        logo_url:       get('logo_url'),
+        hero_image_url: get('hero_image_url'),
+      });
+      if (error) throw error;
+      (window as any).closeLoading();
+      (window as any).showToast('Configuración guardada correctamente', 'success');
+    } catch (e: any) {
+      (window as any).closeLoading();
+      (window as any).showError('Error al guardar', e.message);
+    }
+  });
+</script>

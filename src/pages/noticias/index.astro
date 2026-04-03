@@ -1,0 +1,52 @@
+---
+import PublicLayout from '../../layouts/PublicLayout.astro';
+import NewsCard from '../../components/public/NewsCard.astro';
+import { getNews } from '../../services/content';
+
+const { data: news } = await getNews(12);
+
+const newsToShow = news || [];
+---
+
+<PublicLayout
+  title="Noticias – I.E. Jesús de Nazaret"
+  description="Mantente informado sobre las actividades, logros y novedades de la I.E. Jesús de Nazaret en Bellavista, Celendín."
+>
+  <div class="bg-gradient-primary text-white py-14 sm:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4">Noticias</h1>
+      <p class="text-white/80 text-base sm:text-xl max-w-2xl mx-auto">
+        Actividades, logros y novedades de nuestra comunidad educativa
+      </p>
+    </div>
+  </div>
+
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {newsToShow.length > 0 ? (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {newsToShow.map(item => (
+            <NewsCard
+              title={item.title}
+              summary={item.summary}
+              image_url={item.image_url}
+              slug={item.slug}
+              published_at={item.published_at}
+              type={item.type}
+              featured={item.featured}
+              isNews={true}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-20 text-gray-400">
+          <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+          </svg>
+          <p class="text-lg font-medium">Aún no hay noticias publicadas</p>
+          <p class="text-sm mt-1">Vuelve pronto para estar al día con nuestra institución</p>
+        </div>
+      )}
+    </div>
+  </section>
+</PublicLayout>

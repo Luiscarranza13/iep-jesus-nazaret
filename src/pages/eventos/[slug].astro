@@ -1,0 +1,182 @@
+---
+import PublicLayout from '../../layouts/PublicLayout.astro';
+import { getEventBySlug } from '../../services/content';
+import { formatDate } from '../../utils/helpers';
+
+const { slug } = Astro.params;
+const { data: event } = await getEventBySlug(slug!);
+
+if (!event) return Astro.redirect('/eventos');
+
+const videoUrl: string = (event as any).video_url ?? '';
+const isFacebook = videoUrl && (videoUrl.includes('facebook.com') || videoUrl.includes('fb.watch'));
+const isYoutube  = videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'));
+const isVimeo    = videoUrl && videoUrl.includes('vimeo.com');
+const isDirect   = videoUrl && !isFacebook && !isYoutube && !isVimeo;
+
+let youtubeEmbedUrl = '';
+if (isYoutube) {
+  const m = videoUrl.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
+  if (m) youtubeEmbedUrl = `https://www.youtube.com/embed/${m[1]}?rel=0`;
+}
+
+let vimeoEmbedUrl = '';
+if (isVimeo) {
+  const m = videoUrl.match(/vimeo\.com\/(\d+)/);
+  if (m) vimeoEmbedUrl = `https://player.vimeo.com/video/${m[1]}`;
+}
+
+const fbAppId = import.meta.env.PUBLIC_FACEBOOK_APP_ID ?? '';
+let facebookEmbedUrl = '';
+if (isFacebook) {
+  facebookEmbedUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&show_text=false&width=734&appId=${fbAppId}`;
+}
+
+const statusMap: Record<string, { label: string; color: string }> = {
+  upcoming:  { label: 'Próximo',   color: 'bg-green-100 text-green-800' },
+  past:      { label: 'Realizado', color: 'bg-gray-100 text-gray-700' },
+  cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-700' },
+};
+const status = statusMap[event.status] ?? statusMap.upcoming;
+---
+
+<PublicLayout
+  title={`${event.title} – I.E. Jesús de Nazaret`}
+  description={event.description || `Evento: ${event.title}. ${event.event_date ? formatDate(event.event_date) : ''}`}
+  image={event.image_url || undefined}
+>
+  <div class="bg-gradient-primary text-white py-14 sm:py-20">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <span class={`inline-block text-xs font-bold px-3 py-1 rounded-full mb-4 ${status.color}`}>
+        {status.label}
+      </span>
+      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight mb-4">
+        {event.title}
+      </h1>
+      <div class="flex flex-wrap gap-5 text-white/70 text-sm mt-2">
+        {event.event_date && (
+          <span class="flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            {formatDate(event.event_date)}
+          </span>
+        )}
+        {event.event_time && (
+          <span class="flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {event.event_time}
+          </span>
+        )}
+        {event.location && (
+          <span class="flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            </svg>
+            {event.location}
+          </span>
+        )}
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    {event.image_url && (
+      <div class="rounded-2xl overflow-hidden mb-8 aspect-video">
+        <img src={event.image_url} alt={event.title} class="w-full h-full object-cover" />
+      </div>
+    )}
+
+    {videoUrl && (
+      <div class="mb-8">
+        <h3 class="font-heading font-bold text-gray-900 mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Video del evento
+        </h3>
+
+        {isYoutube && (
+          <div class="rounded-2xl overflow-hidden aspect-video bg-black">
+            <iframe src={youtubeEmbedUrl} class="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" />
+          </div>
+        )}
+
+        {isVimeo && (
+          <div class="rounded-2xl overflow-hidden aspect-video bg-black">
+            <iframe src={vimeoEmbedUrl} class="w-full h-full" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" />
+          </div>
+        )}
+
+        {isDirect && (
+          <div class="rounded-2xl overflow-hidden bg-black">
+            <video src={videoUrl} controls class="w-full max-h-[500px]" preload="metadata" />
+          </div>
+        )}
+
+        {isFacebook && (
+          <div class="rounded-2xl overflow-hidden bg-gray-900" style="min-height:400px">
+            <iframe
+              src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&show_text=false&width=734&appId`}
+              class="w-full"
+              style="height:400px;border:none;overflow:hidden"
+              scrolling="no"
+              frameborder="0"
+              allowfullscreen
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              loading="lazy"
+            />
+          </div>
+        )}
+      </div>
+    )}
+
+    {event.description && (
+      <div class="space-y-4 text-gray-700 leading-relaxed mb-10">
+        {event.description.split('\n\n').filter(Boolean).map((para: string) => (
+          <p class="text-base leading-relaxed">{para}</p>
+        ))}
+      </div>
+    )}
+
+    <!-- Info card -->
+    <div class="card p-6 bg-gray-50 border border-gray-100 mb-8">
+      <h3 class="font-heading font-bold text-gray-900 mb-4">Detalles del evento</h3>
+      <dl class="space-y-3">
+        {event.event_date && (
+          <div class="flex gap-3">
+            <dt class="text-sm font-semibold text-gray-500 w-20 flex-shrink-0">Fecha</dt>
+            <dd class="text-sm text-gray-800">{formatDate(event.event_date)}</dd>
+          </div>
+        )}
+        {event.event_time && (
+          <div class="flex gap-3">
+            <dt class="text-sm font-semibold text-gray-500 w-20 flex-shrink-0">Hora</dt>
+            <dd class="text-sm text-gray-800">{event.event_time}</dd>
+          </div>
+        )}
+        {event.location && (
+          <div class="flex gap-3">
+            <dt class="text-sm font-semibold text-gray-500 w-20 flex-shrink-0">Lugar</dt>
+            <dd class="text-sm text-gray-800">{event.location}</dd>
+          </div>
+        )}
+        <div class="flex gap-3">
+          <dt class="text-sm font-semibold text-gray-500 w-20 flex-shrink-0">Estado</dt>
+          <dd><span class={`badge text-xs ${status.color}`}>{status.label}</span></dd>
+        </div>
+      </dl>
+    </div>
+
+    <a href="/eventos" class="flex items-center gap-2 text-primary-700 font-semibold text-sm hover:gap-3 transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Volver a eventos
+    </a>
+  </div>
+</PublicLayout>
+

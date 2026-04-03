@@ -1,0 +1,51 @@
+---
+import PublicLayout from '../../layouts/PublicLayout.astro';
+import NewsCard from '../../components/public/NewsCard.astro';
+import { getBlogs } from '../../services/content';
+
+const { data: blogs } = await getBlogs(12);
+
+const blogsToShow = blogs || [];
+---
+
+<PublicLayout
+  title="Blog Educativo – I.E. Jesús de Nazaret"
+  description="Artículos, reflexiones y recursos educativos de la I.E. Jesús de Nazaret para estudiantes, padres de familia y docentes."
+>
+  <div class="bg-gradient-primary text-white py-14 sm:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl mb-3 sm:mb-4">Blog Educativo</h1>
+      <p class="text-white/80 text-base sm:text-xl max-w-2xl mx-auto">
+        Artículos y reflexiones para nuestra comunidad educativa
+      </p>
+    </div>
+  </div>
+
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {blogsToShow.length > 0 ? (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {blogsToShow.map((blog: any) => (
+            <NewsCard
+              title={blog.title}
+              summary={blog.summary}
+              image_url={blog.image_url}
+              slug={blog.slug}
+              published_at={blog.published_at}
+              type={blog.categories?.name}
+              isNews={false}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-20 text-gray-400">
+          <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p class="text-lg font-medium">Aún no hay artículos publicados</p>
+          <p class="text-sm mt-1">Vuelve pronto, estamos preparando contenido para ti</p>
+        </div>
+      )}
+    </div>
+  </section>
+</PublicLayout>

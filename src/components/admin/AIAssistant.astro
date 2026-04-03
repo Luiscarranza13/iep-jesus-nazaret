@@ -1,0 +1,347 @@
+---
+interface Props {
+  targetField?: string;
+  module?: string;
+}
+const { targetField = 'content', module = 'blog' } = Astro.props;
+---
+
+<div class="ai-assistant-card rounded-2xl overflow-hidden border border-violet-100 shadow-sm bg-white" id="ai-assistant">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 px-4 py-3.5 bg-gradient-to-r from-violet-600 to-purple-700">
+    <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center text-base flex-shrink-0">✨</div>
+    <div class="min-w-0">
+      <p class="font-semibold text-white text-sm leading-tight">Asistente IA · Gemini</p>
+      <p class="text-violet-200 text-xs">Genera contenido y llena los campos automáticamente</p>
+    </div>
+    <!-- Status dot -->
+    <div class="ml-auto flex items-center gap-1.5 flex-shrink-0">
+      <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+      <span class="text-xs text-violet-200 hidden sm:block">Activo</span>
+    </div>
+  </div>
+
+  <div class="p-4 space-y-4">
+
+    <!-- Acciones -->
+    <div>
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">¿Qué quieres hacer?</p>
+      <div class="grid grid-cols-2 gap-1.5">
+        <button type="button" class="ai-btn active group flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all duration-150
+          bg-violet-50 border-violet-300 text-violet-700" data-action="draft">
+          <span class="text-sm">✍️</span> Generar borrador
+        </button>
+        <button type="button" class="ai-btn group flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all duration-150
+          bg-white border-gray-200 text-gray-600 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700" data-action="improve">
+          <span class="text-sm">✨</span> Mejorar texto
+        </button>
+        <button type="button" class="ai-btn group flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all duration-150
+          bg-white border-gray-200 text-gray-600 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700" data-action="summarize">
+          <span class="text-sm">📋</span> Resumir
+        </button>
+        <button type="button" class="ai-btn group flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all duration-150
+          bg-white border-gray-200 text-gray-600 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700" data-action="correct">
+          <span class="text-sm">🔤</span> Corregir
+        </button>
+        <button type="button" class="ai-btn group flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all duration-150
+          bg-white border-gray-200 text-gray-600 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700" data-action="title">
+          <span class="text-sm">💡</span> Sugerir títulos
+        </button>
+        <button type="button" class="ai-btn group flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all duration-150
+          bg-white border-gray-200 text-gray-600 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700" data-action="seo">
+          <span class="text-sm">🔍</span> Sugerir SEO
+        </button>
+      </div>
+    </div>
+
+    <!-- Tono -->
+    <div>
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tono</p>
+      <div class="flex gap-1.5 flex-wrap">
+        {[
+          { key: 'formal',      label: 'Formal' },
+          { key: 'cercano',     label: 'Cercano' },
+          { key: 'informativo', label: 'Informativo' },
+          { key: 'breve',       label: 'Breve' },
+        ].map(t => (
+          <button type="button"
+            class={`tone-btn text-xs px-3 py-1.5 rounded-lg border font-medium transition-all duration-150 ${t.key === 'formal' ? 'bg-violet-50 border-violet-300 text-violet-700' : 'bg-white border-gray-200 text-gray-500 hover:border-violet-300 hover:text-violet-700'}`}
+            data-tone={t.key}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Input de tema -->
+    <div>
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tema o contexto</p>
+      <textarea
+        id="ai-topic"
+        rows="2"
+        class="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent placeholder-gray-400 transition-all"
+        placeholder="Ej: inicio del año escolar 2026, actividades deportivas..."
+      ></textarea>
+    </div>
+
+    <!-- Botón generar -->
+    <button type="button" id="ai-generate-btn"
+      class="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white font-semibold text-sm rounded-xl transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.98]"
+      data-target={targetField} data-module={module}>
+      <span id="ai-btn-text" class="flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        Generar con IA
+      </span>
+      <span id="ai-btn-loading" class="hidden items-center gap-2">
+        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        Generando...
+      </span>
+    </button>
+
+    <!-- Error -->
+    <div id="ai-error" class="hidden items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-3 py-2.5 text-xs">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span id="ai-error-text"></span>
+    </div>
+
+    <!-- Resultado -->
+    <div id="ai-result" class="hidden space-y-2">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Resultado</p>
+        <div class="flex gap-1.5">
+          <button type="button" id="ai-copy-btn"
+            class="flex items-center gap-1 text-xs text-violet-600 hover:text-violet-800 font-medium px-2.5 py-1 rounded-lg hover:bg-violet-50 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            Copiar
+          </button>
+          <button type="button" id="ai-fill-btn"
+            class="flex items-center gap-1 text-xs bg-violet-600 hover:bg-violet-700 text-white font-medium px-2.5 py-1 rounded-lg transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Llenar campos
+          </button>
+        </div>
+      </div>
+      <div id="ai-result-text"
+        class="bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs text-gray-700 leading-relaxed max-h-44 overflow-y-auto whitespace-pre-wrap font-mono">
+      </div>
+      <p class="text-xs text-gray-400 text-center">
+        ↑ Haz clic en <span class="font-semibold text-violet-600">Llenar campos</span> para aplicar al formulario
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { slugify } from '../../utils/helpers';
+
+  let selectedAction = 'draft';
+  let selectedTone   = 'formal';
+  let aiResult       = '';
+
+  const genBtn      = document.getElementById('ai-generate-btn') as HTMLButtonElement;
+  const targetField = genBtn?.dataset.target ?? 'content';
+  const module      = genBtn?.dataset.module  ?? 'blog';
+
+  // ── Selección de acción ──────────────────────────────────────────────────
+  document.querySelectorAll('.ai-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.ai-btn').forEach(x => {
+        x.classList.remove('bg-violet-50', 'border-violet-300', 'text-violet-700');
+        x.classList.add('bg-white', 'border-gray-200', 'text-gray-600');
+      });
+      b.classList.add('bg-violet-50', 'border-violet-300', 'text-violet-700');
+      b.classList.remove('bg-white', 'border-gray-200', 'text-gray-600');
+      selectedAction = (b as HTMLElement).dataset.action ?? 'draft';
+    });
+  });
+
+  // ── Selección de tono ────────────────────────────────────────────────────
+  document.querySelectorAll('.tone-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.tone-btn').forEach(x => {
+        x.classList.remove('bg-violet-50', 'border-violet-300', 'text-violet-700');
+        x.classList.add('bg-white', 'border-gray-200', 'text-gray-500');
+      });
+      b.classList.add('bg-violet-50', 'border-violet-300', 'text-violet-700');
+      b.classList.remove('bg-white', 'border-gray-200', 'text-gray-500');
+      selectedTone = (b as HTMLElement).dataset.tone ?? 'formal';
+    });
+  });
+
+  // ── Generar ──────────────────────────────────────────────────────────────
+  genBtn?.addEventListener('click', async () => {
+    const topic     = (document.getElementById('ai-topic') as HTMLTextAreaElement)?.value ?? '';
+    const targetEl  = document.getElementById(targetField) as HTMLInputElement | HTMLTextAreaElement | null;
+    const content   = targetEl?.value ?? '';
+
+    const btnText   = document.getElementById('ai-btn-text');
+    const btnLoad   = document.getElementById('ai-btn-loading');
+    const resultDiv = document.getElementById('ai-result');
+    const resultTxt = document.getElementById('ai-result-text');
+    const errorDiv  = document.getElementById('ai-error');
+    const errorTxt  = document.getElementById('ai-error-text');
+
+    btnText?.classList.add('hidden');
+    btnLoad?.classList.remove('hidden');
+    btnLoad?.classList.add('flex');
+    resultDiv?.classList.add('hidden');
+    errorDiv?.classList.add('hidden');
+    errorDiv?.classList.remove('flex');
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No hay sesión activa. Por favor inicia sesión.');
+
+      const res = await fetch('/api/ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          action: selectedAction,
+          content: content || undefined,
+          topic:   topic   || undefined,
+          tone:    selectedTone,
+          module,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? `Error ${res.status}`);
+
+      aiResult = data.result;
+      if (resultTxt) resultTxt.textContent = aiResult;
+      resultDiv?.classList.remove('hidden');
+
+      // Auto-fill si es borrador completo
+      if (selectedAction === 'draft') autoFill(aiResult);
+
+    } catch (err: any) {
+      if (errorTxt) errorTxt.textContent = err.message;
+      errorDiv?.classList.remove('hidden');
+      errorDiv?.classList.add('flex');
+    } finally {
+      btnText?.classList.remove('hidden');
+      btnLoad?.classList.add('hidden');
+      btnLoad?.classList.remove('flex');
+    }
+  });
+
+  // ── Auto-fill de campos del formulario ───────────────────────────────────
+  function setField(id: string, value: string) {
+    const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
+    if (!el || !value.trim()) return;
+    el.value = value.trim();
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function autoFill(text: string) {
+
+    // ── SEO: parsear JSON ──────────────────────────────────────────────────
+    if (selectedAction === 'seo') {
+      try {
+        const jsonMatch = text.match(/\{[\s\S]*?\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.seo_title)       setField('seo_title', parsed.seo_title);
+          if (parsed.seo_description) setField('seo_description', parsed.seo_description);
+          if (parsed.summary)         setField('summary', parsed.summary);
+          (window as any).showToast?.('SEO aplicado al formulario ✓', 'success');
+          return;
+        }
+      } catch {}
+      warn('No se pudo parsear el JSON de SEO');
+      return;
+    }
+
+    // ── Títulos: primera línea al campo title ──────────────────────────────
+    if (selectedAction === 'title') {
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines[0]) {
+        setField('title', lines[0]);
+        const slugEl = document.getElementById('slug') as HTMLInputElement | null;
+        if (slugEl && !slugEl.dataset.manual) slugEl.value = slugify(lines[0]);
+        (window as any).showToast?.('Título aplicado ✓', 'success');
+      }
+      return;
+    }
+
+    // ── Resumir: va directo al campo summary ──────────────────────────────
+    if (selectedAction === 'summarize') {
+      setField('summary', text);
+      (window as any).showToast?.('Resumen aplicado ✓', 'success');
+      return;
+    }
+
+    // ── Mejorar / Corregir: reemplaza el campo objetivo ───────────────────
+    if (selectedAction === 'improve' || selectedAction === 'correct') {
+      setField(targetField, text);
+      (window as any).showToast?.('Texto aplicado ✓', 'success');
+      return;
+    }
+
+    // ── Borrador: parsear TITULO / RESUMEN / CONTENIDO ────────────────────
+    if (selectedAction === 'draft') {
+      // Extraer TITULO:
+      const titleMatch = text.match(/^TITULO:\s*(.+)/im);
+      const title = titleMatch?.[1]?.trim() ?? '';
+
+      // Extraer RESUMEN:
+      const summaryMatch = text.match(/^RESUMEN:\s*(.+)/im);
+      const summary = summaryMatch?.[1]?.trim() ?? '';
+
+      // Extraer CONTENIDO: (todo lo que viene después de "CONTENIDO:")
+      const contentMatch = text.match(/^CONTENIDO:\s*\n([\s\S]+)/im);
+      const content = contentMatch?.[1]?.trim() ?? text;
+
+      if (title) {
+        setField('title', title);
+        const slugEl = document.getElementById('slug') as HTMLInputElement | null;
+        if (slugEl && !slugEl.dataset.manual) slugEl.value = slugify(title);
+      }
+      if (summary) setField('summary', summary);
+      setField(targetField, content);
+
+      // Auto-llenar SEO si existen esos campos en el formulario
+      if (title && document.getElementById('seo_title')) {
+        setField('seo_title', title.substring(0, 60));
+      }
+      if (summary && document.getElementById('seo_description')) {
+        setField('seo_description', summary.substring(0, 160));
+      }
+
+      (window as any).showToast?.('Campos llenados automáticamente ✓', 'success');
+    }
+  }
+
+  // ── Botón "Llenar campos" manual ─────────────────────────────────────────
+  document.getElementById('ai-fill-btn')?.addEventListener('click', () => {
+    if (aiResult) autoFill(aiResult);
+  });
+
+  // ── Copiar ───────────────────────────────────────────────────────────────
+  document.getElementById('ai-copy-btn')?.addEventListener('click', () => {
+    navigator.clipboard.writeText(aiResult);
+    const btn = document.getElementById('ai-copy-btn');
+    if (btn) {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ Copiado';
+      setTimeout(() => btn.innerHTML = orig, 2000);
+    }
+  });
+</script>

@@ -1,0 +1,129 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  noIndex?: boolean;
+  type?: 'website' | 'article';
+  publishedAt?: string;
+  keywords?: string;
+}
+
+const {
+  title = 'I.E. Jesus de Nazaret - Bellavista, Celendin',
+  description = 'Institucion Educativa Jesus de Nazaret. Educacion secundaria publica de calidad en Bellavista, Celendin, Cajamarca, Peru.',
+  image = '/og-image.jpg',
+  noIndex = false,
+  type = 'website',
+  publishedAt,
+  keywords = 'colegio Bellavista, I.E. Jesus de Nazaret, educacion secundaria Celendin, Cajamarca, institucion educativa publica',
+} = Astro.props;
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://iejesusnazaret.edu.pe';
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const ogImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
+const titleSuffix = ' - I.E. Jesus de Nazaret';
+const fullTitle = title.includes('Jesus de Nazaret') ? title : `${title}${titleSuffix}`;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="generator" content={Astro.generator} />
+
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <meta name="keywords" content={keywords} />
+  <meta name="author" content="I.E. Jesus de Nazaret" />
+  <meta name="robots" content={noIndex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
+  <link rel="canonical" href={canonicalUrl} />
+
+  <meta property="og:type" content={type} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="es_PE" />
+  <meta property="og:site_name" content="I.E. Jesus de Nazaret" />
+  {publishedAt && <meta property="article:published_time" content={publishedAt} />}
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={fullTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+
+  <meta name="geo.region" content="PE-CAJ" />
+  <meta name="geo.placename" content="Bellavista, Celendin, Cajamarca" />
+  <meta name="geo.position" content="-6.8667;-78.1500" />
+  <meta name="ICBM" content="-6.8667, -78.1500" />
+
+  {!noIndex && (
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "name": "I.E. Jesus de Nazaret",
+      "alternateName": "IEP Jesus de Nazaret Bellavista",
+      "url": siteUrl,
+      "logo": `${siteUrl}/favicon.svg`,
+      "description": "Institucion educativa secundaria publica en Bellavista, Celendin, Cajamarca, Peru.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Bellavista",
+        "addressRegion": "Cajamarca",
+        "addressCountry": "PE"
+      },
+      "sameAs": ["https://www.facebook.com/p/Instituci%C3%B3n-Educativa-Jes%C3%BAs-de-Nazaret-_-Bellavista-100085320282328/"]
+    })} />
+  )}
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+</head>
+<body>
+  <slot />
+
+  <script>
+    import { supabase } from '../lib/supabase';
+    import { initScrollReveal, animateCounters, initTilt } from '../utils/animations';
+
+    async function syncAdminCookie(accessToken) {
+      try {
+        if (!accessToken) {
+          await fetch('/api/auth/session', { method: 'DELETE' });
+          return;
+        }
+
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+      } catch {
+        return;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initScrollReveal();
+      animateCounters();
+      initTilt();
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      await syncAdminCookie(session?.access_token ?? null);
+
+      supabase.auth.onAuthStateChange((_event, nextSession) => {
+        void syncAdminCookie(nextSession?.access_token ?? null);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/common/Icon.astro';
+import { getAdminDashboardStats } from '../../services/admin-content';
+
+const stats = await getAdminDashboardStats().catch(() => ({
+  blogs: 0, news: 0, galleries: 0, photos: 0,
+  events: 0, documents: 0, unreadMessages: 0,
+}));
+
+const cards = [
+  { label: 'Blogs',           value: stats.blogs,          icon: 'file-text',     href: '/admin/blogs',      color: 'bg-blue-50 border-blue-200',    iconColor: 'text-blue-600 bg-blue-100' },
+  { label: 'Noticias',        value: stats.news,           icon: 'newspaper',     href: '/admin/noticias',   color: 'bg-violet-50 border-violet-200', iconColor: 'text-violet-600 bg-violet-100' },
+  { label: 'Galerías',        value: stats.galleries,      icon: 'image',         href: '/admin/galerias',   color: 'bg-pink-50 border-pink-200',    iconColor: 'text-pink-600 bg-pink-100' },
+  { label: 'Fotos',           value: stats.photos,         icon: 'camera',        href: '/admin/galerias',   color: 'bg-orange-50 border-orange-200', iconColor: 'text-orange-600 bg-orange-100' },
+  { label: 'Eventos',         value: stats.events,         icon: 'calendar-days', href: '/admin/eventos',    color: 'bg-green-50 border-green-200',  iconColor: 'text-green-600 bg-green-100' },
+  { label: 'Documentos',      value: stats.documents,      icon: 'folder-open',   href: '/admin/documentos', color: 'bg-yellow-50 border-yellow-200', iconColor: 'text-yellow-600 bg-yellow-100' },
+  { label: 'Mensajes nuevos', value: stats.unreadMessages, icon: 'mail',          href: '/admin/mensajes',   color: 'bg-red-50 border-red-200',      iconColor: 'text-red-600 bg-red-100' },
+];
+
+const quickActions = [
+  { label: 'Nueva noticia',   href: '/admin/noticias/nuevo',   icon: 'newspaper',     color: 'text-violet-600 bg-violet-50 hover:bg-violet-100 border-violet-100' },
+  { label: 'Nuevo blog',      href: '/admin/blogs/nuevo',      icon: 'file-text',     color: 'text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-100' },
+  { label: 'Nuevo evento',    href: '/admin/eventos/nuevo',    icon: 'calendar-plus', color: 'text-green-600 bg-green-50 hover:bg-green-100 border-green-100' },
+  { label: 'Subir documento', href: '/admin/documentos/nuevo', icon: 'upload',        color: 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100 border-yellow-100' },
+  { label: 'Nueva galería',   href: '/admin/galerias/nuevo',   icon: 'image-plus',    color: 'text-pink-600 bg-pink-50 hover:bg-pink-100 border-pink-100' },
+  { label: 'Configuración',   href: '/admin/configuracion',    icon: 'settings',      color: 'text-gray-600 bg-gray-50 hover:bg-gray-100 border-gray-100' },
+];
+---
+
+<AdminLayout title="Dashboard" activeSection="dashboard">
+  <!-- Bienvenida -->
+  <div class="relative bg-gradient-primary rounded-2xl p-8 text-white mb-8 overflow-hidden animate-fade-in-up">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4 animate-morph"></div>
+    <div class="absolute bottom-0 left-1/3 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 animate-spin-slow"></div>
+    <div class="relative flex items-center gap-4">
+      <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+        <Icon name="graduation-cap" class="w-6 h-6 text-white" />
+      </div>
+      <div>
+        <h2 class="font-heading font-bold text-2xl mb-0.5">Bienvenido al Panel</h2>
+        <p class="text-white/70 text-sm">I.E. Jesús de Nazaret · Bellavista, Celendín, Cajamarca</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+    {cards.map((card, i) => (
+      <a
+        href={card.href}
+        class={`stat-card border ${card.color} animate-fade-in-up`}
+        style={`animation-delay: ${i * 60}ms`}
+      >
+        <div class="flex items-start justify-between mb-4">
+          <div class={`w-10 h-10 ${card.iconColor} rounded-xl flex items-center justify-center`}>
+            <Icon name={card.icon} class="w-5 h-5" />
+          </div>
+          <Icon name="arrow-up-right" class="w-4 h-4 opacity-40" />
+        </div>
+        <p class="text-3xl font-heading font-bold text-gray-900" data-counter={card.value}>{card.value}</p>
+        <p class="text-sm font-medium text-gray-500 mt-1">{card.label}</p>
+      </a>
+    ))}
+  </div>
+
+  <!-- Acciones rápidas -->
+  <div class="card-admin p-6 mb-8 animate-fade-in-up delay-400">
+    <div class="flex items-center gap-2 mb-5">
+      <Icon name="zap" class="w-5 h-5 text-primary-600" />
+      <h3 class="font-heading font-bold text-lg text-gray-900">Acciones Rápidas</h3>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {quickActions.map((action, i) => (
+        <a
+          href={action.href}
+          class={`flex flex-col items-center gap-2.5 p-4 rounded-xl border ${action.color} transition-all duration-200 text-center group hover:-translate-y-1 hover:shadow-md`}
+          style={`animation-delay: ${i * 50}ms`}
+        >
+          <Icon name={action.icon} class="w-6 h-6 group-hover:scale-110 transition-transform" />
+          <span class="text-xs font-semibold leading-tight">{action.label}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <!-- IA Banner -->
+  <div class="relative card-admin p-6 bg-gradient-to-br from-primary-50 to-secondary-50 border border-primary-100 overflow-hidden animate-fade-in-up delay-500">
+    <div class="absolute top-0 right-0 w-40 h-40 bg-primary-100/50 rounded-full -translate-y-1/2 translate-x-1/4 animate-morph"></div>
+    <div class="relative flex items-start gap-4">
+      <div class="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+        <Icon name="sparkles" class="w-6 h-6 text-white" />
+      </div>
+      <div class="flex-1">
+        <h3 class="font-heading font-bold text-lg text-gray-900 mb-1">Asistente IA con Gemini</h3>
+        <p class="text-gray-600 text-sm mb-4">
+          Genera borradores, mejora textos, crea comunicados y optimiza el SEO de tu contenido institucional con inteligencia artificial.
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <a href="/admin/blogs/nuevo" class="badge-primary text-xs px-3 py-1.5 rounded-full font-medium hover:bg-primary-200 transition-colors">
+            Redactar blog con IA
+          </a>
+          <a href="/admin/noticias/nuevo" class="badge-primary text-xs px-3 py-1.5 rounded-full font-medium hover:bg-primary-200 transition-colors">
+            Crear noticia con IA
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { getSession } from '../../lib/auth';
+  import { animateCounters } from '../../utils/animations';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+  animateCounters();
+</script>

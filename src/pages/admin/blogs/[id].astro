@@ -1,0 +1,170 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import AIAssistant from '../../../components/admin/AIAssistant.astro';
+import ImageUploader from '../../../components/admin/ImageUploader.astro';
+import { getAdminBlogById } from '../../../services/admin-content';
+
+const { id } = Astro.params;
+const { blog, categories } = await getAdminBlogById(id!).catch(() => ({
+  blog: null,
+  categories: [],
+}));
+
+if (!blog) return Astro.redirect('/admin/blogs');
+
+const publishedDate = blog.published_at ? blog.published_at.split('T')[0] : '';
+---
+
+<AdminLayout title="Editar Blog" activeSection="blogs">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center gap-3 mb-6 animate-fade-in-down">
+      <a href="/admin/blogs" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+        <Icon name="arrow-left" class="w-5 h-5" />
+      </a>
+      <h2 class="font-heading font-bold text-xl text-gray-900">Editar Blog</h2>
+      <span class="ml-auto badge-gray text-xs">ID: {id}</span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-5">
+        <div class="card-admin p-6 space-y-5 animate-fade-in-up">
+          <div>
+            <label class="label" for="title">Título *</label>
+            <input type="text" id="title" class="input" value={blog.title} />
+          </div>
+          <div>
+            <label class="label" for="slug">Slug (URL)</label>
+            <input type="text" id="slug" class="input font-mono text-sm" value={blog.slug} data-manual="true" />
+          </div>
+          <div>
+            <label class="label" for="summary">Resumen</label>
+            <textarea id="summary" rows="2" class="input resize-none">{blog.summary ?? ''}</textarea>
+          </div>
+          <div>
+            <label class="label" for="content">Contenido *</label>
+            <textarea id="content" rows="14" class="input resize-none font-mono text-sm leading-relaxed">{blog.content ?? ''}</textarea>
+          </div>
+        </div>
+
+        <div class="card-admin p-6 space-y-4 animate-fade-in-up delay-100">
+          <div class="flex items-center gap-2 mb-1">
+            <Icon name="search" class="w-5 h-5 text-primary-600" />
+            <h3 class="font-semibold text-gray-900">SEO</h3>
+          </div>
+          <div>
+            <label class="label" for="seo_title">Meta título <span class="text-gray-400 font-normal">(máx. 60 caracteres)</span></label>
+            <input type="text" id="seo_title" class="input" value={blog.seo_title ?? ''} maxlength="60" />
+            <p class="text-xs text-gray-400 mt-1" id="seo-title-count">{(blog.seo_title ?? '').length} / 60</p>
+          </div>
+          <div>
+            <label class="label" for="seo_description">Meta descripción <span class="text-gray-400 font-normal">(máx. 160 caracteres)</span></label>
+            <textarea id="seo_description" rows="2" class="input resize-none" maxlength="160">{blog.seo_description ?? ''}</textarea>
+            <p class="text-xs text-gray-400 mt-1" id="seo-desc-count">{(blog.seo_description ?? '').length} / 160</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-5">
+        <div class="card-admin p-5 space-y-4 animate-fade-in-right">
+          <div class="flex items-center gap-2 mb-1">
+            <Icon name="send" class="w-5 h-5 text-primary-600" />
+            <h3 class="font-semibold text-gray-900">Publicación</h3>
+          </div>
+          <div>
+            <label class="label" for="status">Estado</label>
+            <select id="status" class="input">
+              <option value="draft"     selected={blog.status === 'draft'}>Borrador</option>
+              <option value="published" selected={blog.status === 'published'}>Publicado</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="published_at">Fecha de publicación</label>
+            <input type="date" id="published_at" class="input" value={publishedDate} />
+          </div>
+          <div>
+            <label class="label" for="category_id">Categoría</label>
+            <select id="category_id" class="input">
+              <option value="">Sin categoría</option>
+              {categories?.map(cat => (
+                <option value={cat.id} selected={(blog as any).categories?.id === cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+          <ImageUploader fieldId="image_url" bucket="blog-images" label="Imagen destacada" currentUrl={blog.image_url ?? ''} />
+          <div class="flex gap-2 pt-2">
+            <button type="button" id="save-draft-btn" class="btn-secondary flex-1 text-sm py-2.5 justify-center gap-1.5">
+              <Icon name="save" class="w-4 h-4" /> Guardar
+            </button>
+            <button type="button" id="publish-btn" class="btn-primary flex-1 text-sm py-2.5 justify-center gap-1.5">
+              <Icon name="send" class="w-4 h-4" /> Publicar
+            </button>
+          </div>
+        </div>
+        <div class="animate-fade-in-right delay-100">
+          <AIAssistant targetField="content" module="blog" />
+        </div>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { getSession } from '../../../lib/auth';
+  import { upsertBlog } from '../../../services/content';
+  import { slugify } from '../../../utils/helpers';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  const id = Number(window.location.pathname.split('/').pop());
+
+  const titleEl = document.getElementById('title') as HTMLInputElement;
+  const slugEl  = document.getElementById('slug')  as HTMLInputElement;
+  titleEl?.addEventListener('input', () => {
+    if (!slugEl.dataset.manual) slugEl.value = slugify(titleEl.value);
+  });
+  slugEl?.addEventListener('input', () => { slugEl.dataset.manual = 'true'; });
+
+  const seoTitle = document.getElementById('seo_title') as HTMLInputElement;
+  const seoDesc  = document.getElementById('seo_description') as HTMLTextAreaElement;
+  seoTitle?.addEventListener('input', () => {
+    document.getElementById('seo-title-count')!.textContent = `${seoTitle.value.length} / 60`;
+  });
+  seoDesc?.addEventListener('input', () => {
+    document.getElementById('seo-desc-count')!.textContent = `${seoDesc.value.length} / 160`;
+  });
+
+  const get = (id: string) => (document.getElementById(id) as any)?.value;
+
+  async function saveBlog(status: string) {
+    const title = get('title'); const slug = get('slug');
+    if (!title || !slug) { (window as any).showToast('El título y slug son requeridos', 'error'); return; }
+    const session = await getSession();
+    if (!session) return;
+    (window as any).showLoading(status === 'published' ? 'Publicando...' : 'Guardando...');
+    try {
+      const { error } = await upsertBlog({
+        id, title, slug,
+        summary:         get('summary') || null,
+        content:         get('content') || null,
+        image_url:       get('image_url') || null,
+        category_id:     get('category_id') || null,
+        seo_title:       get('seo_title') || null,
+        seo_description: get('seo_description') || null,
+        status,
+        author_id: session.user.id,
+        published_at: status === 'published' ? (get('published_at') || new Date().toISOString()) : null,
+      });
+      if (error) throw error;
+      (window as any).closeLoading();
+      (window as any).showToast(status === 'published' ? 'Blog publicado ✓' : 'Cambios guardados ✓', 'success');
+      setTimeout(() => window.location.href = '/admin/blogs', 1200);
+    } catch (e: any) {
+      (window as any).closeLoading();
+      (window as any).showError('Error al guardar', e.message);
+    }
+  }
+
+  document.getElementById('save-draft-btn')?.addEventListener('click', () => saveBlog('draft'));
+  document.getElementById('publish-btn')?.addEventListener('click',    () => saveBlog('published'));
+</script>

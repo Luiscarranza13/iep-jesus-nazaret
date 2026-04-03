@@ -1,0 +1,99 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import ImageUploader from '../../../components/admin/ImageUploader.astro';
+import { supabase } from '../../../lib/supabase';
+
+const { id } = Astro.params;
+const { data: event } = await supabase.from('events').select('*').eq('id', id!).single();
+if (!event) return Astro.redirect('/admin/eventos');
+---
+
+<AdminLayout title="Editar Evento" activeSection="eventos">
+  <div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-3 mb-6 animate-fade-in-down">
+      <a href="/admin/eventos" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+        <Icon name="arrow-left" class="w-5 h-5" />
+      </a>
+      <h2 class="font-heading font-bold text-xl text-gray-900">Editar Evento</h2>
+      <span class="ml-auto badge-gray text-xs">ID: {id}</span>
+    </div>
+
+    <div class="card-admin p-6 space-y-5 animate-fade-in-up">
+      <div>
+        <label class="label" for="title">Título *</label>
+        <input type="text" id="title" class="input" value={event.title} />
+      </div>
+      <div>
+        <label class="label" for="slug">Slug</label>
+        <input type="text" id="slug" class="input font-mono text-sm" value={event.slug} data-manual="true" />
+      </div>
+      <div>
+        <label class="label" for="description">Descripción</label>
+        <textarea id="description" rows="4" class="input resize-none">{event.description ?? ''}</textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="label" for="event_date">Fecha *</label>
+          <input type="date" id="event_date" class="input" value={event.event_date} />
+        </div>
+        <div>
+          <label class="label" for="event_time">Hora</label>
+          <input type="time" id="event_time" class="input" value={event.event_time ?? ''} />
+        </div>
+      </div>
+      <div>
+        <label class="label" for="location">Lugar</label>
+        <input type="text" id="location" class="input" value={event.location ?? ''} />
+      </div>
+      <ImageUploader fieldId="image_url" bucket="blog-images" label="Imagen del evento" currentUrl={event.image_url ?? ''} />
+      <ImageUploader fieldId="video_url" bucket="blog-images" label="Video del evento" accept="video/*" urlMode="video" showAiGen={false} currentUrl={(event as any).video_url ?? ''} />
+      <div>
+        <label class="label" for="status">Estado</label>
+        <select id="status" class="input">
+          <option value="upcoming"  selected={event.status === 'upcoming'}>Próximo</option>
+          <option value="past"      selected={event.status === 'past'}>Realizado</option>
+          <option value="cancelled" selected={event.status === 'cancelled'}>Cancelado</option>
+        </select>
+      </div>
+      <button id="save-btn" class="btn-primary w-full justify-center py-3 gap-2">
+        <Icon name="save" class="w-4 h-4" /> Guardar cambios
+      </button>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { getSession } from '../../../lib/auth';
+  import { upsertEvent } from '../../../services/content';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  const id = Number(window.location.pathname.split('/').pop());
+  const get = (fieldId: string) => (document.getElementById(fieldId) as any)?.value;
+
+  document.getElementById('save-btn')?.addEventListener('click', async () => {
+    const title = get('title'); const slug = get('slug'); const date = get('event_date');
+    if (!title || !slug || !date) { (window as any).showToast('Título, slug y fecha son requeridos', 'error'); return; }
+    (window as any).showLoading('Guardando...');
+    try {
+      const { error } = await upsertEvent({
+        id, title, slug,
+        description: get('description') || null,
+        event_date:  date,
+        event_time:  get('event_time') || null,
+        location:    get('location') || null,
+        image_url:   get('image_url') || null,
+        video_url:   get('video_url') || null,
+        status:      get('status') as 'upcoming' | 'past' | 'cancelled',
+      });
+      if (error) throw error;
+      (window as any).closeLoading();
+      (window as any).showToast('Evento actualizado ✓', 'success');
+      setTimeout(() => window.location.href = '/admin/eventos', 1200);
+    } catch (e: any) {
+      (window as any).closeLoading();
+      (window as any).showError('Error al guardar', e.message);
+    }
+  });
+</script>

@@ -1,0 +1,184 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+import { getSettings } from '../services/settings';
+
+const settings = await getSettings();
+---
+
+<PublicLayout
+  title="Educación Secundaria – I.E. Jesús de Nazaret"
+  description="Conoce la oferta educativa de nivel secundaria de la I.E. Jesús de Nazaret en Bellavista, Celendín. Formación integral para jóvenes de 12 a 17 años."
+>
+  <!-- Encabezado -->
+  <div class="bg-gradient-primary text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="font-heading font-bold text-5xl mb-4">Educación Secundaria</h1>
+      <p class="text-white/80 text-xl max-w-2xl mx-auto">
+        Formación integral para jóvenes de 12 a 17 años en Bellavista, Celendín
+      </p>
+    </div>
+  </div>
+
+  <!-- Descripción general -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <span class="inline-flex items-center gap-2 text-primary-700 font-semibold text-sm uppercase tracking-wider mb-4">
+            <span class="w-8 h-0.5 bg-primary-700 rounded-full"></span>
+            Nivel Secundaria
+            <span class="w-8 h-0.5 bg-primary-700 rounded-full"></span>
+          </span>
+          <h2 class="font-heading font-bold text-3xl text-gray-900 mb-6">
+            Una educación que prepara para la vida
+          </h2>
+          <p class="text-gray-600 leading-relaxed mb-4">
+            La I.E. Jesús de Nazaret ofrece educación secundaria pública y gratuita bajo la modalidad de Educación Básica Regular (EBR). Atendemos a jóvenes de 12 a 17 años del centro poblado de Bellavista y sus alrededores, en el distrito de Celendín, Cajamarca.
+          </p>
+          <p class="text-gray-600 leading-relaxed mb-4">
+            Con grupos de aproximadamente 20 estudiantes por aula, garantizamos una atención más cercana y personalizada, favoreciendo el aprendizaje y el desarrollo de cada joven.
+          </p>
+          <p class="text-gray-600 leading-relaxed mb-8">
+            Contamos con turnos de mañana y tarde para adaptarnos a las necesidades de las familias de nuestra comunidad.
+          </p>
+
+          <!-- Datos clave -->
+          <div class="grid grid-cols-2 gap-4">
+            {[
+              { label: 'Grados', value: '1.° a 5.° de secundaria' },
+              { label: 'Edades', value: '12 a 17 años' },
+              { label: 'Turnos', value: 'Mañana y tarde' },
+              { label: 'Alumnos/aula', value: '~20 estudiantes' },
+            ].map(item => (
+              <div class="bg-primary-50 rounded-xl p-4 border border-primary-100">
+                <p class="text-xs text-primary-600 font-semibold mb-1">{item.label}</p>
+                <p class="font-heading font-bold text-gray-900 text-sm">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Visual -->
+        <div class="bg-gradient-to-br from-primary-600 to-primary-800 rounded-3xl p-10 text-white">
+          <div class="text-6xl mb-6 text-center">🎓</div>
+          <h3 class="font-heading font-bold text-2xl text-center mb-8">Nivel Secundaria</h3>
+          <div class="space-y-4">
+            {[
+              { grado: '1.er grado', edad: '12 años' },
+              { grado: '2.° grado', edad: '13 años' },
+              { grado: '3.er grado', edad: '14 años' },
+              { grado: '4.° grado', edad: '15 años' },
+              { grado: '5.° grado', edad: '16–17 años' },
+            ].map(item => (
+              <div class="flex items-center justify-between bg-white/10 rounded-xl px-5 py-3">
+                <span class="font-semibold text-white">{item.grado}</span>
+                <span class="text-white/70 text-sm">{item.edad}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Áreas curriculares -->
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <span class="inline-flex items-center gap-2 text-primary-700 font-semibold text-sm uppercase tracking-wider mb-3">
+          <span class="w-8 h-0.5 bg-primary-700 rounded-full"></span>
+          Currículo Nacional
+          <span class="w-8 h-0.5 bg-primary-700 rounded-full"></span>
+        </span>
+        <h2 class="font-heading font-bold text-3xl text-gray-900">Áreas de aprendizaje</h2>
+        <p class="text-gray-500 mt-3 max-w-xl mx-auto">Seguimos el Currículo Nacional de Educación Básica del Ministerio de Educación del Perú</p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {[
+          { icon: '📖', area: 'Comunicación' },
+          { icon: '🔢', area: 'Matemática' },
+          { icon: '🌍', area: 'Ciencias Sociales' },
+          { icon: '🔬', area: 'Ciencia y Tecnología' },
+          { icon: '🌐', area: 'Inglés' },
+          { icon: '💻', area: 'Educación para el Trabajo' },
+          { icon: '🎨', area: 'Arte y Cultura' },
+          { icon: '⚽', area: 'Educación Física' },
+          { icon: '🙏', area: 'Educación Religiosa' },
+          { icon: '🧭', area: 'Desarrollo Personal' },
+          { icon: '💰', area: 'Educación Económica' },
+          { icon: '🏛️', area: 'Formación Ciudadana' },
+        ].map(item => (
+          <div class="card p-5 text-center hover:-translate-y-1 transition-transform duration-200">
+            <div class="text-3xl mb-3">{item.icon}</div>
+            <p class="font-medium text-gray-800 text-sm leading-tight">{item.area}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Enfoque pedagógico -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="font-heading font-bold text-3xl text-gray-900">Nuestro enfoque educativo</h2>
+        <p class="text-gray-500 mt-3 max-w-xl mx-auto">Formamos jóvenes íntegros, críticos y preparados para los desafíos del mundo actual</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[
+          {
+            icon: '🧠',
+            title: 'Pensamiento crítico',
+            desc: 'Fomentamos la capacidad de analizar, reflexionar y tomar decisiones fundamentadas ante situaciones de la vida cotidiana.',
+          },
+          {
+            icon: '📚',
+            title: 'Formación académica sólida',
+            desc: 'Desarrollamos competencias en comunicación, matemáticas, ciencias y humanidades siguiendo el Currículo Nacional.',
+          },
+          {
+            icon: '🤝',
+            title: 'Valores y ciudadanía',
+            desc: 'Promovemos el respeto, la responsabilidad y la solidaridad como bases de una convivencia sana y democrática.',
+          },
+          {
+            icon: '🎯',
+            title: 'Preparación para el futuro',
+            desc: 'Orientamos a los estudiantes hacia estudios superiores o la inserción productiva al mundo laboral.',
+          },
+          {
+            icon: '👨‍🏫',
+            title: 'Acompañamiento docente',
+            desc: 'Docentes comprometidos que brindan atención personalizada gracias a los grupos reducidos de cada aula.',
+          },
+          {
+            icon: '🌱',
+            title: 'Desarrollo personal',
+            desc: 'Apoyamos el crecimiento emocional, social y personal de cada estudiante durante su etapa adolescente.',
+          },
+        ].map(item => (
+          <div class="card p-6 hover:-translate-y-1 transition-all duration-300">
+            <div class="text-3xl mb-4">{item.icon}</div>
+            <h3 class="font-heading font-bold text-gray-900 mb-3">{item.title}</h3>
+            <p class="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-20 bg-gradient-primary text-white">
+    <div class="max-w-3xl mx-auto px-4 text-center">
+      <h2 class="font-heading font-bold text-4xl mb-4">¿Deseas matricular a tu hijo?</h2>
+      <p class="text-white/80 text-lg mb-8">
+        Contáctanos para conocer el proceso de matrícula y los requisitos de ingreso a la I.E. Jesús de Nazaret.
+      </p>
+      <a href="/contacto" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-primary-800 font-bold rounded-xl hover:bg-gray-50 transition-all shadow-xl">
+        Solicitar información de matrícula
+      </a>
+    </div>
+  </section>
+</PublicLayout>

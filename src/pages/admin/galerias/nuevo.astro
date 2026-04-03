@@ -1,0 +1,74 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import Icon from '../../../components/common/Icon.astro';
+import ImageUploader from '../../../components/admin/ImageUploader.astro';
+---
+
+<AdminLayout title="Nueva Galería" activeSection="galerias">
+  <div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-3 mb-6 animate-fade-in-down">
+      <a href="/admin/galerias" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+        <Icon name="arrow-left" class="w-5 h-5" />
+      </a>
+      <h2 class="font-heading font-bold text-xl text-gray-900">Nueva Galería</h2>
+    </div>
+
+    <div class="card-admin p-6 space-y-5 animate-fade-in-up">
+      <div>
+        <label class="label" for="title">Título *</label>
+        <input type="text" id="title" class="input" placeholder="Nombre de la galería" />
+      </div>
+      <div>
+        <label class="label" for="slug">Slug</label>
+        <input type="text" id="slug" class="input font-mono text-sm" placeholder="nombre-de-la-galeria" />
+      </div>
+      <div>
+        <label class="label" for="description">Descripción</label>
+        <textarea id="description" rows="3" class="input resize-none" placeholder="Descripción de la galería..."></textarea>
+      </div>
+      <ImageUploader fieldId="cover_image_url" bucket="gallery-images" label="Imagen de portada" />
+
+      <button id="save-btn" class="btn-primary w-full justify-center py-3 gap-2">
+        <Icon name="image-plus" class="w-4 h-4" />
+        Crear galería
+      </button>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { getSession } from '../../../lib/auth';
+  import { upsertGallery } from '../../../services/content';
+  import { slugify } from '../../../utils/helpers';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  const titleEl = document.getElementById('title') as HTMLInputElement;
+  const slugEl  = document.getElementById('slug')  as HTMLInputElement;
+  const coverEl = document.getElementById('cover_image_url') as HTMLInputElement;
+
+  titleEl?.addEventListener('input', () => {
+    if (!slugEl.dataset.manual) slugEl.value = slugify(titleEl.value);
+  });
+  slugEl?.addEventListener('input', () => { slugEl.dataset.manual = 'true'; });
+
+  document.getElementById('save-btn')?.addEventListener('click', async () => {
+    const title = titleEl?.value; const slug = slugEl?.value;
+    if (!title || !slug) { (window as any).showToast('Título y slug son requeridos', 'error'); return; }
+    (window as any).showLoading('Creando galería...');
+    try {
+      const { error } = await upsertGallery({
+        title, slug,
+        description: (document.getElementById('description') as HTMLTextAreaElement)?.value || null,
+        cover_image_url: coverEl?.value || null,
+      });
+      if (error) throw error;
+      (window as any).closeLoading();
+      (window as any).showToast('Galería creada correctamente', 'success');
+      setTimeout(() => window.location.href = '/admin/galerias', 1200);
+    } catch (e: any) {
+      (window as any).closeLoading();
+      (window as any).showError('Error al crear galería', e.message);
+    }
+  });
+</script>

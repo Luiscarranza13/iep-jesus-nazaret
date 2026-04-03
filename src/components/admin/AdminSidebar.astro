@@ -1,0 +1,115 @@
+---
+import Icon from '../common/Icon.astro';
+
+interface Props {
+  activeSection?: string;
+}
+const { activeSection = '' } = Astro.props;
+
+const menuItems = [
+  { href: '/admin',               label: 'Dashboard',     icon: 'layout-dashboard', section: 'dashboard' },
+  { href: '/admin/blogs',         label: 'Blogs',         icon: 'file-text',        section: 'blogs' },
+  { href: '/admin/noticias',      label: 'Noticias',      icon: 'newspaper',        section: 'noticias' },
+  { href: '/admin/galerias',      label: 'Galerías',      icon: 'image',            section: 'galerias' },
+  { href: '/admin/eventos',       label: 'Eventos',       icon: 'calendar-days',    section: 'eventos' },
+  { href: '/admin/documentos',    label: 'Documentos',    icon: 'folder-open',      section: 'documentos' },
+  { href: '/admin/mensajes',      label: 'Mensajes',      icon: 'mail',             section: 'mensajes' },
+  { href: '/admin/configuracion', label: 'Configuración', icon: 'settings',         section: 'configuracion' },
+];
+---
+
+<aside class="w-64 bg-white border-r border-gray-100 flex flex-col h-full shadow-sm" id="admin-sidebar">
+  <!-- Logo + close button (móvil) -->
+  <div class="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between gap-2">
+    <a href="/admin" class="flex items-center gap-3 group min-w-0">
+      <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:scale-105 transition-transform duration-200 overflow-hidden flex-shrink-0">
+        <img
+          src="https://scontent.flim9-1.fna.fbcdn.net/v/t39.30808-6/287194106_104240939096582_2519527103714913921_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeEicJlqnEuRlyjoKt7whkja2IWO8TXpas_YhY7xNelqzyt4H3yqMTyv6mcVPKAc0XTP3KFIT-eTXRuP40MbXt2A&_nc_ohc=5kb-T5seVVgQ7kNvwG0pTxg&_nc_oc=AdoFDBVseZb475n-M8FPFJ0jAipklTspZgDHvI3nqWJcTQjH9sEVU31pQtguJgOCoDM&_nc_zt=23&_nc_ht=scontent.flim9-1.fna&_nc_gid=p6zA30yaN7fLUV022BbZBA&_nc_ss=7a3a8&oh=00_Af1wKdKnchNa06zQN_9Uzk74JSxqhzZXNd_VfL_a8SFqBA&oe=69D4AEDD"
+          alt="Logo"
+          class="w-full h-full object-cover"
+          crossorigin="anonymous"
+          onerror="this.style.display='none'; this.parentElement.textContent='J';"
+        />
+      </div>
+      <div class="min-w-0">
+        <p class="font-heading font-bold text-gray-900 text-sm leading-tight truncate">I.E. Jesús de Nazaret</p>
+        <p class="text-xs text-gray-400">Panel Admin</p>
+      </div>
+    </a>
+    <!-- Botón cerrar (solo móvil) -->
+    <button id="sidebar-close-btn" class="lg:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors flex-shrink-0" aria-label="Cerrar menú">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto scrollbar-hide">
+    {menuItems.map((item) => (
+      <a
+        href={item.href}
+        class={`sidebar-link group ${activeSection === item.section ? 'active' : ''}`}
+      >
+        <Icon name={item.icon} class="w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110" />
+        <span class="text-sm">{item.label}</span>
+        {activeSection === item.section && (
+          <span class="ml-auto w-1.5 h-1.5 bg-primary-600 rounded-full"></span>
+        )}
+      </a>
+    ))}
+  </nav>
+
+  <!-- Footer -->
+  <div class="p-3 border-t border-gray-100 space-y-1">
+    <a
+      href="/"
+      target="_blank"
+      class="flex items-center gap-2 text-sm text-gray-500 hover:text-primary-700 transition-colors px-4 py-2.5 rounded-xl hover:bg-gray-50"
+    >
+      <Icon name="external-link" class="w-4 h-4" />
+      <span>Ver sitio web</span>
+    </a>
+    <button
+      id="sidebar-logout"
+      class="w-full flex items-center gap-2 text-sm text-red-500 hover:text-red-700 transition-colors px-4 py-2.5 rounded-xl hover:bg-red-50"
+    >
+      <Icon name="log-out" class="w-4 h-4" />
+      <span>Cerrar sesión</span>
+    </button>
+  </div>
+</aside>
+
+<script>
+  import { signOut } from '../../lib/auth';
+  import Swal from 'sweetalert2';
+
+  // Cerrar sidebar en móvil al hacer clic en un link
+  document.getElementById('sidebar-close-btn')?.addEventListener('click', () => {
+    (window as any).closeAdminSidebar?.();
+  });
+
+  // Cerrar sidebar al navegar (móvil)
+  document.querySelectorAll('#admin-sidebar a').forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth < 1024) (window as any).closeAdminSidebar?.();
+    });
+  });
+
+  document.getElementById('sidebar-logout')?.addEventListener('click', async () => {
+    const result = await Swal.fire({
+      title: '¿Cerrar sesión?',
+      text: 'Se cerrará tu sesión actual.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, salir',
+      cancelButtonText: 'Cancelar',
+      customClass: { confirmButton: 'swal2-confirm', cancelButton: 'swal2-cancel' },
+      buttonsStyling: false,
+    });
+    if (result.isConfirmed) {
+      await signOut();
+      window.location.href = '/admin/login';
+    }
+  });
+</script>
