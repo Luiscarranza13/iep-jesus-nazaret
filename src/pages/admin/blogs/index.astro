@@ -1,72 +1,103 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import Icon from '../../../components/common/Icon.astro';
-import { getAdminBlogs } from '../../../services/admin-content';
+import AdminSearchFilter from '../../../components/admin/AdminSearchFilter.astro';
+import Pagination from '../../../components/admin/Pagination.astro';
+import { getAdminBlogs, getBlogCategories } from '../../../services/admin-content';
 import { formatDateShort } from '../../../utils/helpers';
 
-const blogs = await getAdminBlogs().catch(() => []);
+const search = Astro.url.searchParams.get('search') || '';
+const status = Astro.url.searchParams.get('status') || '';
+const category = Astro.url.searchParams.get('category') || '';
+const page = parseInt(Astro.url.searchParams.get('page') || '1');
+const limit = 10;
+const offset = (page - 1) * limit;
+
+const { data: blogs, total } = await getAdminBlogs({ search, status, category, limit, offset }).catch(() => ({ data: [], total: 0 }));
+const categories = await getBlogCategories().catch(() => []);
+
+const categoryOptions = categories.map(c => ({ label: c.name, value: c.id.toString() }));
+const statusOptions = [
+  { label: 'Publicado', value: 'published' },
+  { label: 'Borrador', value: 'draft' },
+];
 ---
 
 <AdminLayout title="Blogs" activeSection="blogs">
   <div class="flex items-center justify-between mb-6 animate-fade-in-down">
-    <p class="text-gray-500 text-sm">{blogs?.length || 0} publicaciones en total</p>
+    <div>
+      <h2 class="font-heading font-bold text-2xl text-gray-900">Blogs</h2>
+      <p class="text-gray-500 text-sm">{total} publicaciones en total</p>
+    </div>
     <a href="/admin/blogs/nuevo" class="btn-primary text-sm py-2.5 gap-2">
       <Icon name="plus" class="w-4 h-4" />
       Nuevo blog
     </a>
   </div>
 
+  <AdminSearchFilter
+    placeholder="Buscar por título..."
+    filters={[
+      { name: 'category', label: 'Todas las categorías', options: categoryOptions },
+      { name: 'status', label: 'Todos los estados', options: statusOptions }
+    ]}
+    currentValues={{ search, status, category }}
+  />
+
   <div class="card-admin overflow-hidden animate-fade-in-up">
-    <table class="w-full admin-table">
-      <thead>
-        <tr>
-          <th>Título</th>
-          <th class="hidden md:table-cell">Categoría</th>
-          <th class="hidden sm:table-cell">Estado</th>
-          <th class="hidden lg:table-cell">Fecha</th>
-          <th class="text-right">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {blogs && blogs.length > 0 ? blogs.map((blog, i) => (
-          <tr class="animate-fade-in-up" style={`animation-delay: ${i * 40}ms`}>
-            <td>
-              <p class="font-semibold text-gray-900 line-clamp-1">{blog.title}</p>
-              <p class="text-xs text-gray-400 mt-0.5 font-mono">/{blog.slug}</p>
-            </td>
-            <td class="hidden md:table-cell text-gray-500">{(blog as any).categories?.name || '—'}</td>
-            <td class="hidden sm:table-cell">
-              <span class={`badge ${blog.status === 'published' ? 'badge-success' : 'badge-warning'}`}>
-                {blog.status === 'published' ? 'Publicado' : 'Borrador'}
-              </span>
-            </td>
-            <td class="hidden lg:table-cell text-gray-500">
-              {blog.published_at ? formatDateShort(blog.published_at) : '—'}
-            </td>
-            <td class="text-right">
-              <div class="flex items-center justify-end gap-1">
-                <a href={`/admin/blogs/${blog.id}`} class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
-                  <Icon name="pencil" class="w-4 h-4" />
-                </a>
-                <button class="delete-btn p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={blog.id} data-title={blog.title} title="Eliminar">
-                  <Icon name="trash-2" class="w-4 h-4" />
-                </button>
-              </div>
-            </td>
-          </tr>
-        )) : (
+    <div class="overflow-x-auto">
+      <table class="w-full admin-table">
+        <thead>
           <tr>
-            <td colspan="5" class="py-20 text-center text-gray-400">
-              <div class="flex flex-col items-center gap-3">
-                <Icon name="file-text" class="w-12 h-12 opacity-30" />
-                <p class="font-medium">No hay blogs aún</p>
-                <a href="/admin/blogs/nuevo" class="btn-primary text-sm py-2">Crear primer blog</a>
-              </div>
-            </td>
+            <th>Título</th>
+            <th class="hidden md:table-cell">Categoría</th>
+            <th class="hidden sm:table-cell">Estado</th>
+            <th class="hidden lg:table-cell">Fecha</th>
+            <th class="text-right">Acciones</th>
           </tr>
-        )}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {blogs && blogs.length > 0 ? blogs.map((blog, i) => (
+            <tr class="animate-fade-in-up" style={`animation-delay: ${i * 40}ms`}>
+              <td>
+                <p class="font-semibold text-gray-900 line-clamp-1">{blog.title}</p>
+                <p class="text-xs text-gray-400 mt-0.5 font-mono">/{blog.slug}</p>
+              </td>
+              <td class="hidden md:table-cell text-gray-500">{(blog as any).categories?.name || '—'}</td>
+              <td class="hidden sm:table-cell">
+                <span class={`badge ${blog.status === 'published' ? 'badge-success' : 'badge-warning'}`}>
+                  {blog.status === 'published' ? 'Publicado' : 'Borrador'}
+                </span>
+              </td>
+              <td class="hidden lg:table-cell text-gray-500">
+                {blog.published_at ? formatDateShort(blog.published_at) : '—'}
+              </td>
+              <td class="text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <a href={`/admin/blogs/${blog.id}`} class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
+                    <Icon name="pencil" class="w-4 h-4" />
+                  </a>
+                  <button class="delete-btn p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={blog.id} data-title={blog.title} title="Eliminar">
+                    <Icon name="trash-2" class="w-4 h-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          )) : (
+            <tr>
+              <td colspan="5" class="py-20 text-center text-gray-400">
+                <div class="flex flex-col items-center gap-3">
+                  <Icon name="file-text" class="w-12 h-12 opacity-30" />
+                  <p class="font-medium">No hay blogs aún</p>
+                  <a href="/admin/blogs/nuevo" class="btn-primary text-sm py-2">Crear primer blog</a>
+                </div>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+    <Pagination total={total} limit={limit} currentPage={page} />
   </div>
 </AdminLayout>
 

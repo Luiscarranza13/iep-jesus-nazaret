@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/common/Icon.astro';
+import { getSettings } from '../services/settings';
+
+const settings = await getSettings();
+---
+
+<BaseLayout title="Mantenimiento | I.E. Jesús de Nazaret">
+  <main class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-primary-50 to-secondary-50">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl shadow-primary-200/50 p-10 text-center border border-white/50 backdrop-blur-sm animate-fade-in">
+      <div class="w-20 h-20 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-8 animate-bounce-slow">
+        <Icon name="settings-2" class="w-10 h-10 text-primary-600" />
+      </div>
+      
+      <h1 class="font-heading font-black text-3xl text-gray-900 mb-4 tracking-tight">Estamos Mejorando</h1>
+      <p class="text-gray-500 mb-8 leading-relaxed">
+        El sitio web de la <strong>{settings.school_name}</strong> se encuentra en mantenimiento temporal. Volveremos muy pronto con novedades.
+      </p>
+
+      <div class="space-y-4">
+        <div class="p-4 bg-primary-50 rounded-2xl border border-primary-100/50">
+          <p class="text-xs font-bold uppercase tracking-widest text-primary-600 mb-1">Contacto Directo</p>
+          <p class="font-semibold text-gray-700">{settings.phone || settings.whatsapp}</p>
+        </div>
+
+        <a 
+          href={`https://wa.me/${settings.whatsapp.replace(/\D/g, '')}`}
+          target="_blank"
+          class="btn-primary w-full justify-center py-4 gap-2 shadow-lg shadow-primary-200"
+        >
+          <Icon name="phone" class="w-5 h-5" />
+          Contactar por WhatsApp
+        </a>
+      </div>
+
+      <footer class="mt-12 pt-6 border-t border-gray-100">
+        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
+          I.E. Jesús de Nazaret · Bellavista
+        </p>
+      </footer>
+    </div>
+  </main>
+</BaseLayout>

@@ -3,6 +3,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import Icon from '../../../components/common/Icon.astro';
 import AIAssistant from '../../../components/admin/AIAssistant.astro';
 import ImageUploader from '../../../components/admin/ImageUploader.astro';
+import RichTextEditor from '../../../components/admin/RichTextEditor.astro';
 import { getBlogCategories } from '../../../services/admin-content';
 
 const categories = await getBlogCategories().catch(() => []);
@@ -42,27 +43,38 @@ const categories = await getBlogCategories().catch(() => []);
             <label class="label" for="summary">Resumen</label>
             <textarea id="summary" rows="2" class="input resize-none" placeholder="Breve descripción del blog..."></textarea>
           </div>
-          <div>
-            <label class="label" for="content">Contenido *</label>
-            <textarea id="content" rows="14" class="input resize-none font-mono text-sm leading-relaxed" placeholder="Escribe el contenido del blog aquí..."></textarea>
-          </div>
+          <RichTextEditor id="content" label="Contenido *" placeholder="Escribe el contenido del blog aquí..." />
         </div>
 
         <!-- SEO -->
         <div class="card-admin p-6 space-y-4 animate-fade-in-up delay-100">
           <div class="flex items-center gap-2 mb-1">
             <Icon name="search" class="w-5 h-5 text-primary-600" />
-            <h3 class="font-semibold text-gray-900">SEO</h3>
+            <h3 class="font-semibold text-gray-900">SEO (Optimización en Buscadores)</h3>
           </div>
-          <div>
-            <label class="label" for="seo_title">Meta título <span class="text-gray-400 font-normal">(máx. 60 caracteres)</span></label>
-            <input type="text" id="seo_title" class="input" placeholder="Título para buscadores" maxlength="60" />
-            <p class="text-xs text-gray-400 mt-1" id="seo-title-count">0 / 60</p>
-          </div>
-          <div>
-            <label class="label" for="seo_description">Meta descripción <span class="text-gray-400 font-normal">(máx. 160 caracteres)</span></label>
-            <textarea id="seo_description" rows="2" class="input resize-none" placeholder="Descripción para buscadores" maxlength="160"></textarea>
-            <p class="text-xs text-gray-400 mt-1" id="seo-desc-count">0 / 160</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div>
+                <label class="label" for="seo_title">Meta título <span class="text-gray-400 font-normal">(máx. 60)</span></label>
+                <input type="text" id="seo_title" class="input" placeholder="Título para buscadores" maxlength="60" />
+                <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold" id="seo-title-count">0 / 60 caracteres</p>
+              </div>
+              <div>
+                <label class="label" for="seo_description">Meta descripción <span class="text-gray-400 font-normal">(máx. 160)</span></label>
+                <textarea id="seo_description" rows="3" class="input resize-none text-sm" placeholder="Descripción para buscadores" maxlength="160"></textarea>
+                <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold" id="seo-desc-count">0 / 160 caracteres</p>
+              </div>
+            </div>
+            
+            <!-- Vista Previa Google -->
+            <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-2">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Vista previa en buscadores</p>
+              <div class="space-y-1">
+                <p class="text-[#1a0dab] text-lg font-medium hover:underline truncate" id="google-title">Título del Blog | I.E. Jesús de Nazaret</p>
+                <p class="text-[#006621] text-sm truncate" id="google-url">https://iepjesusnazaret.edu.pe/blog/...</p>
+                <p class="text-[#4d5156] text-sm line-clamp-2" id="google-desc">Introduce una descripción para ver cómo aparecerá este blog en los resultados de búsqueda de Google.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -124,18 +136,37 @@ const categories = await getBlogCategories().catch(() => []);
 
   const titleEl = document.getElementById('title') as HTMLInputElement;
   const slugEl  = document.getElementById('slug')  as HTMLInputElement;
+  const googleTitle = document.getElementById('google-title');
+  const googleUrl   = document.getElementById('google-url');
+  const googleDesc  = document.getElementById('google-desc');
+
   titleEl?.addEventListener('input', () => {
-    if (!slugEl.dataset.manual) slugEl.value = slugify(titleEl.value);
+    if (!slugEl.dataset.manual) {
+      const slug = slugify(titleEl.value);
+      slugEl.value = slug;
+      if (googleUrl) googleUrl.textContent = `https://iepjesusnazaret.edu.pe/blog/${slug}`;
+    }
+    if (googleTitle && !get('seo_title')) googleTitle.textContent = `${titleEl.value || 'Título del Blog'} | I.E. Jesús de Nazaret`;
   });
-  slugEl?.addEventListener('input', () => { slugEl.dataset.manual = 'true'; });
+  
+  slugEl?.addEventListener('input', () => { 
+    slugEl.dataset.manual = 'true'; 
+    if (googleUrl) googleUrl.textContent = `https://iepjesusnazaret.edu.pe/blog/${slugEl.value}`;
+  });
 
   const seoTitle = document.getElementById('seo_title') as HTMLInputElement;
   const seoDesc  = document.getElementById('seo_description') as HTMLTextAreaElement;
+  
   seoTitle?.addEventListener('input', () => {
-    document.getElementById('seo-title-count')!.textContent = `${seoTitle.value.length} / 60`;
+    const len = seoTitle.value.length;
+    document.getElementById('seo-title-count')!.textContent = `${len} / 60 caracteres`;
+    if (googleTitle) googleTitle.textContent = seoTitle.value || `${titleEl.value || 'Título del Blog'} | I.E. Jesús de Nazaret`;
   });
+  
   seoDesc?.addEventListener('input', () => {
-    document.getElementById('seo-desc-count')!.textContent = `${seoDesc.value.length} / 160`;
+    const len = seoDesc.value.length;
+    document.getElementById('seo-desc-count')!.textContent = `${len} / 160 caracteres`;
+    if (googleDesc) googleDesc.textContent = seoDesc.value || 'Introduce una descripción para ver cómo aparecerá este blog en los resultados de búsqueda de Google.';
   });
 
   const get = (id: string) => (document.getElementById(id) as any)?.value;

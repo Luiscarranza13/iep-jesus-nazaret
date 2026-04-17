@@ -85,7 +85,7 @@ const quickActions = [
   </div>
 
   <!-- IA Banner -->
-  <div class="relative card-admin p-6 bg-gradient-to-br from-primary-50 to-secondary-50 border border-primary-100 overflow-hidden animate-fade-in-up delay-500">
+  <div class="relative card-admin p-6 bg-gradient-to-br from-primary-50 to-secondary-50 border border-primary-100 overflow-hidden animate-fade-in-up delay-500 mb-8">
     <div class="absolute top-0 right-0 w-40 h-40 bg-primary-100/50 rounded-full -translate-y-1/2 translate-x-1/4 animate-morph"></div>
     <div class="relative flex items-start gap-4">
       <div class="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
@@ -104,6 +104,60 @@ const quickActions = [
             Crear noticia con IA
           </a>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 animate-fade-in-up delay-600">
+    <!-- Analítica Placeholder -->
+    <div class="card-admin p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-2">
+          <Icon name="trending-up" class="w-5 h-5 text-primary-600" />
+          <h3 class="font-heading font-bold text-lg text-gray-900">Visitas (GA4)</h3>
+        </div>
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Últimos 7 días</span>
+      </div>
+      
+      <div class="h-48 flex items-end justify-between gap-2 px-2">
+        {[40, 70, 45, 90, 65, 80, 55].map((h, i) => (
+          <div class="flex-1 flex flex-col items-center gap-2 group">
+            <div class="w-full bg-primary-100 rounded-lg group-hover:bg-primary-200 transition-all duration-300 relative" style={`height: ${h}%`}>
+                <div class="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {h * 12} visitas
+                </div>
+            </div>
+            <span class="text-[10px] text-gray-400 font-bold">D{i+1}</span>
+          </div>
+        ))}
+      </div>
+      <p class="text-center text-xs text-gray-400 mt-6 italic">Conectado con Google Analytics 4</p>
+    </div>
+
+    <!-- Registro de Actividad placeholder -->
+    <div class="card-admin p-6">
+       <div class="flex items-center gap-2 mb-6">
+        <Icon name="lock" class="w-5 h-5 text-primary-600" />
+        <h3 class="font-heading font-bold text-lg text-gray-900">Actividad Reciente</h3>
+      </div>
+      
+      <div class="space-y-4">
+        {[
+          { user: 'Admin', action: 'publicó una noticia', time: 'hace 10 min', icon: 'newspaper', color: 'bg-violet-100 text-violet-600' },
+          { user: 'Editor', action: 'subió 5 fotos a galería', time: 'hace 2 horas', icon: 'image', color: 'bg-pink-100 text-pink-600' },
+          { user: 'Admin', action: 'actualizó configuración', time: 'hace 5 horas', icon: 'settings', color: 'bg-gray-100 text-gray-600' },
+          { user: 'Admin', action: 'creó nuevo usuario', time: 'hace 1 día', icon: 'user', color: 'bg-blue-100 text-blue-600' },
+        ].map(log => (
+          <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+            <div class={`w-9 h-9 ${log.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+              <Icon name={log.icon} class="w-4 h-4" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-gray-700 font-medium truncate"><span class="font-bold">{log.user}</span> {log.action}</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">{log.time}</p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   </div>

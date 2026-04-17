@@ -1,0 +1,74 @@
+---
+import Icon from './common/Icon.astro';
+
+interface Props {
+  total: number;
+  limit: number;
+  currentPage: number;
+}
+
+const { total, limit, currentPage } = Astro.props;
+const totalPages = Math.ceil(total / limit);
+
+if (totalPages <= 1) return null;
+
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+---
+
+<div class="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+  <p class="text-sm text-gray-500">
+    Mostrando <span class="font-semibold text-gray-900">{Math.min(total, (currentPage - 1) * limit + 1)}-{Math.min(total, currentPage * limit)}</span> de <span class="font-semibold text-gray-900">{total}</span>
+  </p>
+
+  <nav class="flex items-center gap-1">
+    <a
+      href={currentPage > 1 ? `?page=${currentPage - 1}` : '#'}
+      class:list={[
+        "p-2 rounded-lg border transition-all",
+        currentPage > 1 ? "border-gray-200 text-gray-600 hover:bg-white hover:border-primary-300" : "border-gray-100 text-gray-300 pointer-events-none"
+      ]}
+    >
+      <Icon name="chevron-left" class="w-4 h-4" />
+    </a>
+
+    {pages.map(page => (
+      <a
+        href={`?page=${page}`}
+        class:list={[
+          "w-9 h-9 flex items-center justify-center rounded-lg border text-sm font-medium transition-all",
+          page === currentPage 
+            ? "bg-primary-600 border-primary-600 text-white shadow-sm shadow-primary-200" 
+            : "bg-white border-gray-200 text-gray-600 hover:border-primary-300 hover:text-primary-600"
+        ]}
+      >
+        {page}
+      </a>
+    ))}
+
+    <a
+      href={currentPage < totalPages ? `?page=${currentPage + 1}` : '#'}
+      class:list={[
+        "p-2 rounded-lg border transition-all",
+        currentPage < totalPages ? "border-gray-200 text-gray-600 hover:bg-white hover:border-primary-300" : "border-gray-100 text-gray-300 pointer-events-none"
+      ]}
+    >
+      <Icon name="chevron-right" class="w-4 h-4" />
+    </a>
+  </nav>
+</div>
+
+<script>
+  // Preservation of other query params when navigating pages
+  document.querySelectorAll('nav a').forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = (link as HTMLAnchorElement).getAttribute('href');
+      if (!href || href === '#') return;
+      
+      e.preventDefault();
+      const url = new URL(window.location.href);
+      const page = new URL(href, window.location.origin).searchParams.get('page');
+      if (page) url.searchParams.set('page', page);
+      window.location.href = url.toString();
+    });
+  });
+</script>

@@ -1,67 +1,94 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import Icon from '../../../components/common/Icon.astro';
+import AdminSearchFilter from '../../../components/admin/AdminSearchFilter.astro';
+import Pagination from '../../../components/admin/Pagination.astro';
 import { getAdminNews } from '../../../services/admin-content';
 import { formatDateShort } from '../../../utils/helpers';
 
-const news = await getAdminNews().catch(() => []);
+const search = Astro.url.searchParams.get('search') || '';
+const type = Astro.url.searchParams.get('type') || '';
+const page = parseInt(Astro.url.searchParams.get('page') || '1');
+const limit = 10;
+const offset = (page - 1) * limit;
+
+const { data: news, total } = await getAdminNews({ search, type, limit, offset }).catch(() => ({ data: [], total: 0 }));
+
+const typeOptions = [
+  { label: 'Institucional', value: 'Institucional' },
+  { label: 'Académico', value: 'Académico' },
+  { label: 'Deportivo', value: 'Deportivo' },
+  { label: 'Cultural', value: 'Cultural' },
+];
 ---
 
 <AdminLayout title="Noticias" activeSection="noticias">
   <div class="flex items-center justify-between mb-6 animate-fade-in-down">
-    <p class="text-gray-500 text-sm">{news?.length || 0} noticias en total</p>
+    <div>
+      <h2 class="font-heading font-bold text-2xl text-gray-900">Noticias</h2>
+      <p class="text-gray-500 text-sm">{total} noticias en total</p>
+    </div>
     <a href="/admin/noticias/nuevo" class="btn-primary text-sm py-2.5 gap-2">
       <Icon name="plus" class="w-4 h-4" />
       Nueva noticia
     </a>
   </div>
 
+  <AdminSearchFilter
+    placeholder="Buscar por título..."
+    filters={[{ name: 'type', label: 'Todos los tipos', options: typeOptions }]}
+    currentValues={{ search, type }}
+  />
+
   <div class="card-admin overflow-hidden animate-fade-in-up">
-    <table class="w-full admin-table">
-      <thead>
-        <tr>
-          <th>Título</th>
-          <th class="hidden sm:table-cell">Tipo</th>
-          <th class="hidden md:table-cell">Destacada</th>
-          <th class="hidden lg:table-cell">Fecha</th>
-          <th class="text-right">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {news && news.length > 0 ? news.map((item, i) => (
-          <tr class="animate-fade-in-up" style={`animation-delay: ${i * 40}ms`}>
-            <td><p class="font-semibold text-gray-900 line-clamp-1">{item.title}</p></td>
-            <td class="hidden sm:table-cell"><span class="badge-gray">{item.type || 'General'}</span></td>
-            <td class="hidden md:table-cell">
-              {item.featured ? <span class="badge-success">Sí</span> : <span class="badge-gray">No</span>}
-            </td>
-            <td class="hidden lg:table-cell text-gray-500">
-              {item.published_at ? formatDateShort(item.published_at) : '—'}
-            </td>
-            <td class="text-right">
-              <div class="flex items-center justify-end gap-1">
-                <a href={`/admin/noticias/${item.id}`} class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
-                  <Icon name="pencil" class="w-4 h-4" />
-                </a>
-                <button class="delete-btn p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={item.id} data-title={item.title} title="Eliminar">
-                  <Icon name="trash-2" class="w-4 h-4" />
-                </button>
-              </div>
-            </td>
-          </tr>
-        )) : (
+    <div class="overflow-x-auto">
+      <table class="w-full admin-table">
+        <thead>
           <tr>
-            <td colspan="5" class="py-20 text-center text-gray-400">
-              <div class="flex flex-col items-center gap-3">
-                <Icon name="newspaper" class="w-12 h-12 opacity-30" />
-                <p class="font-medium">No hay noticias aún</p>
-                <a href="/admin/noticias/nuevo" class="btn-primary text-sm py-2">Crear primera noticia</a>
-              </div>
-            </td>
+            <th>Título</th>
+            <th class="hidden sm:table-cell">Tipo</th>
+            <th class="hidden md:table-cell">Destacada</th>
+            <th class="hidden lg:table-cell">Fecha</th>
+            <th class="text-right">Acciones</th>
           </tr>
-        )}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {news && news.length > 0 ? news.map((item, i) => (
+            <tr class="animate-fade-in-up" style={`animation-delay: ${i * 40}ms`}>
+              <td><p class="font-semibold text-gray-900 line-clamp-1">{item.title}</p></td>
+              <td class="hidden sm:table-cell"><span class="badge-gray">{item.type || 'General'}</span></td>
+              <td class="hidden md:table-cell">
+                {item.featured ? <span class="badge-success">Sí</span> : <span class="badge-gray">No</span>}
+              </td>
+              <td class="hidden lg:table-cell text-gray-500">
+                {item.published_at ? formatDateShort(item.published_at) : '—'}
+              </td>
+              <td class="text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <a href={`/admin/noticias/${item.id}`} class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
+                    <Icon name="pencil" class="w-4 h-4" />
+                  </a>
+                  <button class="delete-btn p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={item.id} data-title={item.title} title="Eliminar">
+                    <Icon name="trash-2" class="w-4 h-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          )) : (
+            <tr>
+              <td colspan="5" class="py-20 text-center text-gray-400">
+                <div class="flex flex-col items-center gap-3">
+                  <Icon name="newspaper" class="w-12 h-12 opacity-30" />
+                  <p class="font-medium">No hay noticias aún</p>
+                  <a href="/admin/noticias/nuevo" class="btn-primary text-sm py-2">Crear primera noticia</a>
+                </div>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+    <Pagination total={total} limit={limit} currentPage={page} />
   </div>
 </AdminLayout>
 

@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getAdminSessionFromRequest, jsonError } from '../../lib/server-auth';
 import { createServerClient } from '../../lib/supabase';
 
-const ALLOWED_BUCKETS = new Set(['blog-images', 'gallery-images', 'hero-images', 'logos']);
+const ALLOWED_BUCKETS = new Set(['blog-images', 'gallery-images', 'hero-images', 'logos', 'avatars']);
 const REQUEST_HEADERS = {
   Accept: 'application/json, image/*',
   'User-Agent': 'IEP-Jesus-de-Nazaret/1.0',

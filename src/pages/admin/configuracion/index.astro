@@ -48,6 +48,37 @@ const youtubeEmbedUrl = toYoutubeEmbedUrl(settings.youtube);
       </div>
     </div>
 
+    <!-- Mi perfil -->
+    <div class="card-admin p-6 animate-fade-in-up">
+      <div class="flex items-center gap-2 mb-5">
+        <Icon name="user" class="w-5 h-5 text-primary-600" />
+        <h3 class="font-heading font-bold text-lg text-gray-900">Mi Perfil</h3>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-6 items-start">
+        <div class="w-full sm:w-48">
+          <label class="label mb-2">Foto de perfil</label>
+          <ImageUploader 
+            fieldId="profile_avatar_url" 
+            bucket="logos" 
+            label="" 
+            currentUrl={Astro.locals.adminProfile?.avatar_url || ''} 
+            showAiGen={false} 
+            allowExternalUrl={true} 
+          />
+        </div>
+        <div class="flex-1 space-y-4 w-full">
+          <div>
+            <label class="label" for="profile_full_name">Nombre completo</label>
+            <input type="text" id="profile_full_name" class="input" placeholder="Tu nombre" value={Astro.locals.adminProfile?.full_name || ''} />
+          </div>
+          <button id="save-profile-btn" class="btn-primary justify-center py-2.5 text-sm gap-2">
+            <Icon name="save" class="w-4 h-4" />
+            Guardar perfil
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Información institucional -->
     <div class="card-admin p-6 animate-fade-in-up">
       <div class="flex items-center gap-2 mb-5">
@@ -160,6 +191,24 @@ const youtubeEmbedUrl = toYoutubeEmbedUrl(settings.youtube);
       </div>
     </div>
 
+    <!-- Ajustes Avanzados -->
+    <div class="card-admin p-6 border-red-100 bg-red-50/20 animate-fade-in-up delay-350">
+      <div class="flex items-center gap-2 mb-5">
+        <Icon name="settings-2" class="w-5 h-5 text-red-600" />
+        <h3 class="font-heading font-bold text-lg text-gray-900">Ajustes Avanzados</h3>
+      </div>
+      <div class="flex items-center justify-between p-4 bg-white rounded-xl border border-red-100">
+        <div>
+          <p class="font-bold text-gray-900">Modo Mantenimiento</p>
+          <p class="text-sm text-gray-500">Muestra una página de aviso y oculta el sitio público.</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="is_maintenance" class="sr-only peer" checked={settings.is_maintenance} />
+          <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-600"></div>
+        </label>
+      </div>
+    </div>
+
     <!-- Guardar -->
     <button id="save-settings-btn" class="btn-primary w-full justify-center py-4 text-base gap-2 animate-fade-in-up delay-400">
       <Icon name="save" class="w-5 h-5" />
@@ -220,8 +269,32 @@ const youtubeEmbedUrl = toYoutubeEmbedUrl(settings.youtube);
   youtubeInput?.addEventListener('input', refreshYoutubePreview);
   refreshYoutubePreview();
 
+  // Perfil inicializado desde el servidor (Astro.locals)
+
+  document.getElementById('save-profile-btn')?.addEventListener('click', async () => {
+    const full_name = (document.getElementById('profile_full_name') as HTMLInputElement)?.value || '';
+    const avatar_url = (document.getElementById('profile_avatar_url') as HTMLInputElement)?.value || '';
+    (window as any).showLoading('Guardando perfil...');
+    try {
+      const res = await fetch('/api/admin/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name, avatar_url }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      (window as any).closeLoading();
+      (window as any).showToast('Perfil guardado correctamente', 'success');
+    } catch (e: any) {
+      (window as any).closeLoading();
+      (window as any).showError('Error al guardar perfil', e.message);
+    }
+  });
+
   document.getElementById('save-settings-btn')?.addEventListener('click', async () => {
     const get = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement)?.value || null;
+    const isMaintenance = (document.getElementById('is_maintenance') as HTMLInputElement)?.checked || false;
+
     (window as any).showLoading('Guardando configuración...');
     try {
       const { error } = await updateSettings({
@@ -240,6 +313,7 @@ const youtubeEmbedUrl = toYoutubeEmbedUrl(settings.youtube);
         youtube:        get('youtube'),
         logo_url:       get('logo_url'),
         hero_image_url: get('hero_image_url'),
+        is_maintenance: isMaintenance,
       });
       if (error) throw error;
       (window as any).closeLoading();

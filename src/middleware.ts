@@ -6,8 +6,11 @@ import {
   jsonError,
 } from './lib/server-auth';
 
+import { getSettings } from './services/settings';
+
 const LOGIN_PATH = '/admin/login';
 const HOME_PATH = '/admin';
+const MAINTENANCE_PATH = '/mantenimiento';
 const PUBLIC_API_PATHS = new Set(['/api/contact', '/api/auth/session']);
 
 function isProtectedApiPath(pathname: string) {
@@ -31,6 +34,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const isLoginRoute = pathname === LOGIN_PATH;
   const adminSession = await getAdminSessionFromRequest(context.request, context.cookies);
+
+  // Mantenimiento (solo aplica si no hay sesión admin y no es ruta admin o estática)
+  if (!isAdminRoute && !isProtectedApiRoute && pathname !== MAINTENANCE_PATH && !pathname.includes('.')) {
+    const settings = await getSettings();
+    if (settings.is_maintenance) {
+      return context.redirect(MAINTENANCE_PATH);
+    }
+  }
 
   if (!adminSession) {
     if (context.cookies.get(ADMIN_AUTH_COOKIE)?.value) {

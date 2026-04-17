@@ -1,0 +1,127 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/common/Icon.astro';
+import { listAllStorageAssets } from '../../services/admin-content';
+import { formatDateShort } from '../../utils/helpers';
+
+const buckets = ['blog-images', 'hero-images', 'logos', 'photos', 'documents'];
+const assets = await listAllStorageAssets(buckets).catch(() => []);
+---
+
+<AdminLayout title="Biblioteca de Medios" activeSection="media">
+  <div class="flex items-center justify-between mb-8 animate-fade-in-down">
+    <div>
+      <h2 class="font-heading font-bold text-2xl text-gray-900">Biblioteca de Medios</h2>
+      <p class="text-gray-500 text-sm">Gestiona todos los archivos subidos al sistema</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 animate-fade-in-up">
+    {assets.length > 0 ? assets.map((asset, i) => {
+      const isPdf = asset.name.toLowerCase().endsWith('.pdf');
+      const isVideo = /\.(mp4|webm|mov)$/i.test(asset.name);
+      
+      return (
+        <div 
+          class="group relative bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all animate-fade-in-up"
+          style={`animation-delay: ${Math.min(i * 30, 600)}ms`}
+        >
+          <div class="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
+            {isPdf ? (
+              <div class="flex flex-col items-center gap-2">
+                <Icon name="file-text" class="w-10 h-10 text-red-500" />
+                <span class="text-[10px] font-bold text-red-600 uppercase">PDF</span>
+              </div>
+            ) : isVideo ? (
+              <div class="flex flex-col items-center gap-2">
+                <Icon name="camera" class="w-10 h-10 text-primary-500" />
+                <span class="text-[10px] font-bold text-primary-600 uppercase">Video</span>
+              </div>
+            ) : (
+              <img src={asset.url} class="w-full h-full object-cover transition-transform group-hover:scale-110" alt={asset.name} />
+            )}
+          </div>
+          
+          <!-- Info Overlay -->
+          <div class="p-3">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 truncate">{asset.bucket}</p>
+            <p class="text-xs font-semibold text-gray-700 truncate mb-1" title={asset.name}>{asset.name}</p>
+            <p class="text-[10px] text-gray-400">{formatDateShort(asset.created_at)}</p>
+          </div>
+
+          <!-- Actions Overlay -->
+          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[2px]">
+            <button 
+              class="copy-url-btn p-2 bg-white rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+              data-url={asset.url}
+              title="Copiar URL"
+            >
+              <Icon name="link" class="w-4 h-4" />
+            </button>
+            <a 
+              href={asset.url}
+              target="_blank"
+              class="p-2 bg-white rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+              title="Abrir"
+            >
+              <Icon name="external-link" class="w-4 h-4" />
+            </a>
+            <button 
+              class="delete-asset-btn p-2 bg-red-500 rounded-lg text-white hover:bg-red-600 transition-colors"
+              data-bucket={asset.bucket}
+              data-name={asset.name}
+              title="Eliminar"
+            >
+              <Icon name="trash-2" class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      );
+    }) : (
+      <div class="col-span-full py-20 text-center text-gray-400 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+        <Icon name="image" class="w-16 h-16 mx-auto mb-4 opacity-20" />
+        <p class="text-lg font-medium">No se encontraron archivos</p>
+        <p class="text-sm">Los archivos que subas en blogs o noticias aparecerán aquí.</p>
+      </div>
+    )}
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { getSession } from '../../lib/auth';
+
+  getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  // Copiar URL
+  document.querySelectorAll('.copy-url-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const url = (btn as HTMLElement).dataset.url!;
+      navigator.clipboard.writeText(url);
+      (window as any).showToast('URL copiada al portapapeles', 'success');
+    });
+  });
+
+  // Eliminar
+  document.querySelectorAll('.delete-asset-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const bucket = (btn as HTMLElement).dataset.bucket!;
+      const name = (btn as HTMLElement).dataset.name!;
+      
+      if (!await (window as any).confirmDelete(name, 'El archivo se borrará permanentemente de la nube.')) return;
+      
+      (window as any).showLoading('Borrando archivo...');
+      try {
+        const { error } = await supabase.storage.from(bucket).remove([name]);
+        if (error) throw error;
+        
+        (window as any).closeLoading();
+        (window as any).showToast('Archivo eliminado', 'success');
+        setTimeout(() => location.reload(), 1000);
+      } catch (e: any) {
+        (window as any).closeLoading();
+        (window as any).showError('Error al eliminar', e.message);
+      }
+    });
+  });
+</script>

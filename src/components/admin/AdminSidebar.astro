@@ -5,12 +5,15 @@ interface Props {
   activeSection?: string;
 }
 const { activeSection = '' } = Astro.props;
+const profile = Astro.locals.adminProfile;
+const user = Astro.locals.adminUser;
 
 const menuItems = [
   { href: '/admin',               label: 'Dashboard',     icon: 'layout-dashboard', section: 'dashboard' },
   { href: '/admin/blogs',         label: 'Blogs',         icon: 'file-text',        section: 'blogs' },
   { href: '/admin/noticias',      label: 'Noticias',      icon: 'newspaper',        section: 'noticias' },
   { href: '/admin/galerias',      label: 'Galerías',      icon: 'image',            section: 'galerias' },
+  { href: '/admin/biblioteca',    label: 'Biblioteca',    icon: 'images',           section: 'media' },
   { href: '/admin/eventos',       label: 'Eventos',       icon: 'calendar-days',    section: 'eventos' },
   { href: '/admin/documentos',    label: 'Documentos',    icon: 'folder-open',      section: 'documentos' },
   { href: '/admin/mensajes',      label: 'Mensajes',      icon: 'mail',             section: 'mensajes' },
@@ -60,6 +63,25 @@ const menuItems = [
       </a>
     ))}
   </nav>
+
+  <!-- Perfil Usuario -->
+  <div class="px-3 py-4 border-t border-gray-100">
+    <div class="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-2xl border border-gray-100">
+      <div class="w-10 h-10 rounded-xl bg-primary-100 flex-shrink-0 overflow-hidden border border-white shadow-sm">
+        {profile?.avatar_url ? (
+          <img src={profile.avatar_url} alt={profile.full_name} class="w-full h-full object-cover" />
+        ) : (
+          <div class="w-full h-full flex items-center justify-center text-primary-600 font-bold uppercase">
+            {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'A'}
+          </div>
+        )}
+      </div>
+      <div class="min-w-0">
+        <p class="text-xs font-bold text-gray-900 truncate">{profile?.full_name || 'Personal I.E.'}</p>
+        <p class="text-[10px] text-gray-400 truncate">{user?.email || 'admin@ie.edu.pe'}</p>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <div class="p-3 border-t border-gray-100 space-y-1">

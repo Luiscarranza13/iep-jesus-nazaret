@@ -3,6 +3,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import Icon from '../../../components/common/Icon.astro';
 import AIAssistant from '../../../components/admin/AIAssistant.astro';
 import ImageUploader from '../../../components/admin/ImageUploader.astro';
+import RichTextEditor from '../../../components/admin/RichTextEditor.astro';
 ---
 
 <AdminLayout title="Nueva Noticia" activeSection="noticias">
@@ -29,10 +30,7 @@ import ImageUploader from '../../../components/admin/ImageUploader.astro';
             <label class="label" for="summary">Resumen</label>
             <textarea id="summary" rows="2" class="input resize-none" placeholder="Breve descripción..."></textarea>
           </div>
-          <div>
-            <label class="label" for="content">Contenido</label>
-            <textarea id="content" rows="14" class="input resize-none" placeholder="Contenido completo de la noticia..."></textarea>
-          </div>
+          <RichTextEditor id="content" label="Contenido" placeholder="Escribe el contenido de la noticia aquí..." />
         </div>
       </div>
 

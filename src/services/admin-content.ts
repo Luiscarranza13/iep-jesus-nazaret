@@ -28,17 +28,33 @@ export async function getAdminDashboardStats() {
   };
 }
 
-export async function getAdminBlogs() {
-  const { data, error } = await adminSupabase()
+export async function getAdminBlogs(options: { search?: string, status?: string, category?: string, limit?: number, offset?: number } = {}) {
+  let query = adminSupabase()
     .from('blogs')
-    .select('*, categories(name)')
-    .order('created_at', { ascending: false });
+    .select('*, categories(name)', { count: 'exact' });
+
+  if (options.status) {
+    query = query.eq('status', options.status);
+  }
+  if (options.category) {
+    query = query.eq('category_id', options.category);
+  }
+  if (options.search) {
+    query = query.ilike('title', `%${options.search}%`);
+  }
+
+  const limit = options.limit ?? 20;
+  const offset = options.offset ?? 0;
+
+  const { data, count, error } = await query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) {
     throw error;
   }
 
-  return data ?? [];
+  return { data: data ?? [], total: count ?? 0 };
 }
 
 export async function getBlogCategories() {
@@ -76,17 +92,30 @@ export async function getAdminBlogById(id: string) {
   };
 }
 
-export async function getAdminNews() {
-  const { data, error } = await adminSupabase()
+export async function getAdminNews(options: { search?: string, type?: string, limit?: number, offset?: number } = {}) {
+  let query = adminSupabase()
     .from('news')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .select('*', { count: 'exact' });
+
+  if (options.type) {
+    query = query.eq('type', options.type);
+  }
+  if (options.search) {
+    query = query.ilike('title', `%${options.search}%`);
+  }
+
+  const limit = options.limit ?? 20;
+  const offset = options.offset ?? 0;
+
+  const { data, count, error } = await query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) {
     throw error;
   }
 
-  return data ?? [];
+  return { data: data ?? [], total: count ?? 0 };
 }
 
 export async function getAdminNewsById(id: string) {
@@ -114,4 +143,27 @@ export async function getAdminMessages() {
   }
 
   return data ?? [];
+}
+
+export async function listAllStorageAssets(buckets: string[]) {
+  const supabase = adminSupabase();
+  const results = await Promise.all(buckets.map(async (bucket) => {
+    const { data, error } = await supabase.storage.from(bucket).list('', {
+      limit: 100,
+      offset: 0,
+      sortBy: { column: 'name', order: 'desc' },
+    });
+    if (error) return [];
+    return data.map(file => ({
+      ...file,
+      bucket,
+      url: supabase.storage.from(bucket).getPublicUrl(file.name).data.publicUrl
+    }));
+  }));
+
+  return results.flat().sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
 }

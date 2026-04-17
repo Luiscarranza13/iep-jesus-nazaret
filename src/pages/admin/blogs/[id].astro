@@ -3,13 +3,11 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import Icon from '../../../components/common/Icon.astro';
 import AIAssistant from '../../../components/admin/AIAssistant.astro';
 import ImageUploader from '../../../components/admin/ImageUploader.astro';
+import RichTextEditor from '../../../components/admin/RichTextEditor.astro';
 import { getAdminBlogById } from '../../../services/admin-content';
 
 const { id } = Astro.params;
-const { blog, categories } = await getAdminBlogById(id!).catch(() => ({
-  blog: null,
-  categories: [],
-}));
+const { blog, categories } = await getAdminBlogById(id!).catch(() => ({ blog: null, categories: [] }));
 
 if (!blog) return Astro.redirect('/admin/blogs');
 
@@ -30,41 +28,62 @@ const publishedDate = blog.published_at ? blog.published_at.split('T')[0] : '';
       <div class="lg:col-span-2 space-y-5">
         <div class="card-admin p-6 space-y-5 animate-fade-in-up">
           <div>
-            <label class="label" for="title">Título *</label>
+            <label class="label" for="title">
+              <span class="flex items-center gap-1.5 mb-1.5">
+                <Icon name="type" class="w-3.5 h-3.5" /> Título *
+              </span>
+            </label>
             <input type="text" id="title" class="input" value={blog.title} />
           </div>
           <div>
-            <label class="label" for="slug">Slug (URL)</label>
+            <label class="label" for="slug">
+              <span class="flex items-center gap-1.5 mb-1.5">
+                <Icon name="link" class="w-3.5 h-3.5" /> Slug (URL)
+              </span>
+            </label>
             <input type="text" id="slug" class="input font-mono text-sm" value={blog.slug} data-manual="true" />
           </div>
           <div>
             <label class="label" for="summary">Resumen</label>
             <textarea id="summary" rows="2" class="input resize-none">{blog.summary ?? ''}</textarea>
           </div>
-          <div>
-            <label class="label" for="content">Contenido *</label>
-            <textarea id="content" rows="14" class="input resize-none font-mono text-sm leading-relaxed">{blog.content ?? ''}</textarea>
-          </div>
+          <RichTextEditor id="content" label="Contenido *" value={blog.content ?? ''} placeholder="Escribe el contenido del blog aquí..." />
         </div>
 
+        <!-- SEO -->
         <div class="card-admin p-6 space-y-4 animate-fade-in-up delay-100">
           <div class="flex items-center gap-2 mb-1">
             <Icon name="search" class="w-5 h-5 text-primary-600" />
-            <h3 class="font-semibold text-gray-900">SEO</h3>
+            <h3 class="font-semibold text-gray-900">SEO (Optimización en Buscadores)</h3>
           </div>
-          <div>
-            <label class="label" for="seo_title">Meta título <span class="text-gray-400 font-normal">(máx. 60 caracteres)</span></label>
-            <input type="text" id="seo_title" class="input" value={blog.seo_title ?? ''} maxlength="60" />
-            <p class="text-xs text-gray-400 mt-1" id="seo-title-count">{(blog.seo_title ?? '').length} / 60</p>
-          </div>
-          <div>
-            <label class="label" for="seo_description">Meta descripción <span class="text-gray-400 font-normal">(máx. 160 caracteres)</span></label>
-            <textarea id="seo_description" rows="2" class="input resize-none" maxlength="160">{blog.seo_description ?? ''}</textarea>
-            <p class="text-xs text-gray-400 mt-1" id="seo-desc-count">{(blog.seo_description ?? '').length} / 160</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div>
+                <label class="label" for="seo_title">Meta título <span class="text-gray-400 font-normal">(máx. 60)</span></label>
+                <input type="text" id="seo_title" class="input" value={blog.seo_title ?? ''} placeholder="Título para buscadores" maxlength="60" />
+                <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold" id="seo-title-count">{blog.seo_title?.length || 0} / 60 caracteres</p>
+              </div>
+              <div>
+                <label class="label" for="seo_description">Meta descripción <span class="text-gray-400 font-normal">(máx. 160)</span></label>
+                <textarea id="seo_description" rows="3" class="input resize-none text-sm" placeholder="Descripción para buscadores" maxlength="160">{blog.seo_description ?? ''}</textarea>
+                <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold" id="seo-desc-count">{blog.seo_description?.length || 0} / 160 caracteres</p>
+              </div>
+            </div>
+            
+            <!-- Vista Previa Google -->
+            <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-2">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Vista previa en buscadores</p>
+              <div class="space-y-1">
+                <p class="text-[#1a0dab] text-lg font-medium hover:underline truncate" id="google-title">{blog.seo_title || blog.title} | I.E. Jesús de Nazaret</p>
+                <p class="text-[#006621] text-sm truncate" id="google-url">https://iepjesusnazaret.edu.pe/blog/{blog.slug}</p>
+                <p class="text-[#4d5156] text-sm line-clamp-2" id="google-desc">{blog.seo_description || 'Introduce una descripción para ver cómo aparecerá este blog en los resultados de búsqueda de Google.'}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- Sidebar -->
       <div class="space-y-5">
         <div class="card-admin p-5 space-y-4 animate-fade-in-right">
           <div class="flex items-center gap-2 mb-1">
@@ -87,20 +106,17 @@ const publishedDate = blog.published_at ? blog.published_at.split('T')[0] : '';
             <select id="category_id" class="input">
               <option value="">Sin categoría</option>
               {categories?.map(cat => (
-                <option value={cat.id} selected={(blog as any).categories?.id === cat.id}>{cat.name}</option>
+                <option value={cat.id} selected={blog.category_id === cat.id}>{cat.name}</option>
               ))}
             </select>
           </div>
           <ImageUploader fieldId="image_url" bucket="blog-images" label="Imagen destacada" currentUrl={blog.image_url ?? ''} />
-          <div class="flex gap-2 pt-2">
-            <button type="button" id="save-draft-btn" class="btn-secondary flex-1 text-sm py-2.5 justify-center gap-1.5">
-              <Icon name="save" class="w-4 h-4" /> Guardar
-            </button>
-            <button type="button" id="publish-btn" class="btn-primary flex-1 text-sm py-2.5 justify-center gap-1.5">
-              <Icon name="send" class="w-4 h-4" /> Publicar
-            </button>
-          </div>
+          <button type="button" id="save-btn" class="btn-primary w-full justify-center text-sm py-3 gap-2">
+            <Icon name="save" class="w-4 h-4" />
+            Guardar cambios
+          </button>
         </div>
+
         <div class="animate-fade-in-right delay-100">
           <AIAssistant targetField="content" module="blog" />
         </div>
@@ -117,54 +133,65 @@ const publishedDate = blog.published_at ? blog.published_at.split('T')[0] : '';
   getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
 
   const id = Number(window.location.pathname.split('/').pop());
-
   const titleEl = document.getElementById('title') as HTMLInputElement;
   const slugEl  = document.getElementById('slug')  as HTMLInputElement;
+  const googleTitle = document.getElementById('google-title');
+  const googleUrl   = document.getElementById('google-url');
+  const googleDesc  = document.getElementById('google-desc');
+
   titleEl?.addEventListener('input', () => {
-    if (!slugEl.dataset.manual) slugEl.value = slugify(titleEl.value);
+    if (!slugEl.dataset.manual) {
+      const slug = slugify(titleEl.value);
+      slugEl.value = slug;
+      if (googleUrl) googleUrl.textContent = `https://iepjesusnazaret.edu.pe/blog/${slug}`;
+    }
+    if (googleTitle && !get('seo_title')) googleTitle.textContent = `${titleEl.value || 'Título del Blog'} | I.E. Jesús de Nazaret`;
   });
-  slugEl?.addEventListener('input', () => { slugEl.dataset.manual = 'true'; });
 
   const seoTitle = document.getElementById('seo_title') as HTMLInputElement;
   const seoDesc  = document.getElementById('seo_description') as HTMLTextAreaElement;
+  
   seoTitle?.addEventListener('input', () => {
-    document.getElementById('seo-title-count')!.textContent = `${seoTitle.value.length} / 60`;
+    const len = seoTitle.value.length;
+    document.getElementById('seo-title-count')!.textContent = `${len} / 60 caracteres`;
+    if (googleTitle) googleTitle.textContent = seoTitle.value || `${titleEl.value || 'Título del Blog'} | I.E. Jesús de Nazaret`;
   });
+  
   seoDesc?.addEventListener('input', () => {
-    document.getElementById('seo-desc-count')!.textContent = `${seoDesc.value.length} / 160`;
+    const len = seoDesc.value.length;
+    document.getElementById('seo-desc-count')!.textContent = `${len} / 160 caracteres`;
+    if (googleDesc) googleDesc.textContent = seoDesc.value || 'Introduce una descripción para ver cómo aparecerá este blog en los resultados de búsqueda de Google.';
   });
 
-  const get = (id: string) => (document.getElementById(id) as any)?.value;
+  const get = (fieldId: string) => (document.getElementById(fieldId) as any)?.value;
 
-  async function saveBlog(status: string) {
+  document.getElementById('save-btn')?.addEventListener('click', async () => {
     const title = get('title'); const slug = get('slug');
-    if (!title || !slug) { (window as any).showToast('El título y slug son requeridos', 'error'); return; }
+    if (!title || !slug) { (window as any).showToast('Título y slug son requeridos', 'error'); return; }
     const session = await getSession();
     if (!session) return;
-    (window as any).showLoading(status === 'published' ? 'Publicando...' : 'Guardando...');
+
+    (window as any).showLoading('Guardando...');
     try {
       const { error } = await upsertBlog({
         id, title, slug,
-        summary:         get('summary') || null,
-        content:         get('content') || null,
-        image_url:       get('image_url') || null,
-        category_id:     get('category_id') || null,
-        seo_title:       get('seo_title') || null,
+        summary: get('summary') || null,
+        content: get('content') || null,
+        image_url: get('image_url') || null,
+        category_id: get('category_id') || null,
+        seo_title: get('seo_title') || null,
         seo_description: get('seo_description') || null,
-        status,
+        status: get('status'),
         author_id: session.user.id,
-        published_at: status === 'published' ? (get('published_at') || new Date().toISOString()) : null,
+        published_at: get('status') === 'published' ? (get('published_at') || new Date().toISOString()) : null,
       });
       if (error) throw error;
       (window as any).closeLoading();
-      (window as any).showToast(status === 'published' ? 'Blog publicado ✓' : 'Cambios guardados ✓', 'success');
+      (window as any).showToast('Blog actualizado ✓', 'success');
       setTimeout(() => window.location.href = '/admin/blogs', 1200);
     } catch (e: any) {
       (window as any).closeLoading();
       (window as any).showError('Error al guardar', e.message);
     }
-  }
-
-  document.getElementById('save-draft-btn')?.addEventListener('click', () => saveBlog('draft'));
-  document.getElementById('publish-btn')?.addEventListener('click',    () => saveBlog('published'));
+  });
 </script>
