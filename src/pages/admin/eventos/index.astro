@@ -1,75 +1,128 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import Icon from '../../../components/common/Icon.astro';
-import { getAllEvents } from '../../../services/content';
+import AdminSearchFilter from '../../../components/admin/AdminSearchFilter.astro';
+import Pagination from '../../../components/admin/Pagination.astro';
+import { getAdminEvents } from '../../../services/admin-content';
 import { formatDateShort } from '../../../utils/helpers';
 
-const { data: events } = await getAllEvents();
+const search = Astro.url.searchParams.get('search') || '';
+const status = Astro.url.searchParams.get('status') || '';
+const page   = parseInt(Astro.url.searchParams.get('page') || '1');
+const limit  = 10;
+const offset = (page - 1) * limit;
+
+const { data: events, total } = await getAdminEvents({ search, status, limit, offset }).catch(() => ({ data: [], total: 0 }));
+
+const statusOptions = [
+  { label: 'Próximos',   value: 'upcoming'  },
+  { label: 'Realizados', value: 'past'      },
+  { label: 'Cancelados', value: 'cancelled' },
+];
 ---
 
 <AdminLayout title="Eventos" activeSection="eventos">
   <div class="flex items-center justify-between mb-6 animate-fade-in-down">
-    <p class="text-gray-500 text-sm">{events?.length || 0} eventos en total</p>
+    <div>
+      <h2 class="font-heading font-bold text-2xl text-gray-900">Eventos</h2>
+      <p class="text-gray-500 text-sm">{total} eventos en total</p>
+    </div>
     <a href="/admin/eventos/nuevo" class="btn-primary text-sm py-2.5 gap-2">
       <Icon name="plus" class="w-4 h-4" />
       Nuevo evento
     </a>
   </div>
 
+  <AdminSearchFilter
+    placeholder="Buscar por título..."
+    filters={[{ name: 'status', label: 'Todos los estados', options: statusOptions }]}
+    currentValues={{ search, status }}
+    showExport={true}
+    exportLabel="Exportar CSV"
+  />
+
   <div class="card-admin overflow-hidden animate-fade-in-up">
-    <table class="w-full admin-table">
-      <thead>
-        <tr>
-          <th>Evento</th>
-          <th class="hidden sm:table-cell">Fecha</th>
-          <th class="hidden md:table-cell">Lugar</th>
-          <th class="hidden lg:table-cell">Estado</th>
-          <th class="text-right">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {events && events.length > 0 ? events.map((event, i) => (
-          <tr class="animate-fade-in-up" style={`animation-delay: ${i * 40}ms`}>
-            <td><p class="font-semibold text-gray-900 line-clamp-1">{event.title}</p></td>
-            <td class="hidden sm:table-cell text-gray-500">{formatDateShort(event.event_date)}</td>
-            <td class="hidden md:table-cell text-gray-500">{event.location || '—'}</td>
-            <td class="hidden lg:table-cell">
-              <span class={`badge ${event.status === 'upcoming' ? 'badge-success' : event.status === 'cancelled' ? 'badge-danger' : 'badge-gray'}`}>
-                {event.status === 'upcoming' ? 'Próximo' : event.status === 'cancelled' ? 'Cancelado' : 'Realizado'}
-              </span>
-            </td>
-            <td class="text-right">
-              <div class="flex items-center justify-end gap-1">
-                <a href={`/admin/eventos/${event.id}`} class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
-                  <Icon name="pencil" class="w-4 h-4" />
-                </a>
-                <button class="delete-btn p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={event.id} data-title={event.title} title="Eliminar">
-                  <Icon name="trash-2" class="w-4 h-4" />
-                </button>
-              </div>
-            </td>
-          </tr>
-        )) : (
+    <div class="overflow-x-auto">
+      <table class="w-full admin-table">
+        <thead>
           <tr>
-            <td colspan="5" class="py-20 text-center text-gray-400">
-              <div class="flex flex-col items-center gap-3">
-                <Icon name="calendar-days" class="w-12 h-12 opacity-30" />
-                <p class="font-medium">No hay eventos aún</p>
-                <a href="/admin/eventos/nuevo" class="btn-primary text-sm py-2">Crear primer evento</a>
-              </div>
-            </td>
+            <th>Evento</th>
+            <th class="hidden sm:table-cell">Fecha</th>
+            <th class="hidden md:table-cell">Lugar</th>
+            <th class="hidden lg:table-cell">Estado</th>
+            <th class="text-right">Acciones</th>
           </tr>
-        )}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {events && events.length > 0 ? events.map((event: any, i: number) => (
+            <tr class="animate-fade-in-up" style={`animation-delay: ${i * 40}ms`}>
+              <td>
+                <p class="font-semibold text-gray-900 line-clamp-1">{event.title}</p>
+                {event.description && <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">{event.description}</p>}
+              </td>
+              <td class="hidden sm:table-cell text-gray-500">{event.event_date ? formatDateShort(event.event_date) : '—'}</td>
+              <td class="hidden md:table-cell text-gray-500">{event.location || '—'}</td>
+              <td class="hidden lg:table-cell">
+                <select class="status-select text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300 cursor-pointer" data-id={event.id} data-current={event.status}>
+                  <option value="upcoming"  selected={event.status === 'upcoming'}>Próximo</option>
+                  <option value="past"      selected={event.status === 'past'}>Realizado</option>
+                  <option value="cancelled" selected={event.status === 'cancelled'}>Cancelado</option>
+                </select>
+              </td>
+              <td class="text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <a href={`/admin/eventos/${event.id}`} class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
+                    <Icon name="pencil" class="w-4 h-4" />
+                  </a>
+                  <button class="delete-btn p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={event.id} data-title={event.title} title="Eliminar">
+                    <Icon name="trash-2" class="w-4 h-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          )) : (
+            <tr>
+              <td colspan="5" class="py-20 text-center text-gray-400">
+                <div class="flex flex-col items-center gap-3">
+                  <Icon name="calendar-days" class="w-12 h-12 opacity-30" />
+                  <p class="font-medium">No hay eventos aún</p>
+                  <a href="/admin/eventos/nuevo" class="btn-primary text-sm py-2">Crear primer evento</a>
+                </div>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+    <Pagination total={total} limit={limit} currentPage={page} />
   </div>
 </AdminLayout>
 
 <script>
   import { deleteEvent } from '../../../services/content';
   import { getSession } from '../../../lib/auth';
+  import { supabase } from '../../../lib/supabase';
 
   getSession().then(s => { if (!s) window.location.href = '/admin/login'; });
+
+  document.querySelectorAll<HTMLSelectElement>('.status-select').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      const id   = Number(sel.dataset.id);
+      const prev = sel.dataset.current || '';
+      (window as any).showLoading('Actualizando estado...');
+      try {
+        const { error } = await supabase.from('events').update({ status: sel.value }).eq('id', id);
+        if (error) throw error;
+        sel.dataset.current = sel.value;
+        (window as any).closeLoading();
+        (window as any).showToast('Estado actualizado', 'success');
+      } catch (e: any) {
+        sel.value = prev;
+        (window as any).closeLoading();
+        (window as any).showError('Error al actualizar', e.message);
+      }
+    });
+  });
 
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', async () => {

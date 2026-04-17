@@ -1,60 +1,132 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import Icon from '../../../components/common/Icon.astro';
-import { getGalleries } from '../../../services/content';
+import AdminSearchFilter from '../../../components/admin/AdminSearchFilter.astro';
+import Pagination from '../../../components/admin/Pagination.astro';
+import { getAdminGalleries } from '../../../services/admin-content';
 
-const { data: galleries } = await getGalleries();
+const search = Astro.url.searchParams.get('search') || '';
+const view   = Astro.url.searchParams.get('view')   || 'grid';
+const page   = parseInt(Astro.url.searchParams.get('page') || '1');
+const limit  = 12;
+const offset = (page - 1) * limit;
+
+const { data: galleries, total } = await getAdminGalleries({ search, limit, offset }).catch(() => ({ data: [], total: 0 }));
 ---
 
 <AdminLayout title="Galerías" activeSection="galerias">
   <div class="flex items-center justify-between mb-6 animate-fade-in-down">
-    <p class="text-gray-500 text-sm">{galleries?.length || 0} galerías en total</p>
+    <div>
+      <h2 class="font-heading font-bold text-2xl text-gray-900">Galerías</h2>
+      <p class="text-gray-500 text-sm">{total} galerías en total</p>
+    </div>
     <a href="/admin/galerias/nuevo" class="btn-primary text-sm py-2.5 gap-2">
       <Icon name="plus" class="w-4 h-4" />
       Nueva galería
     </a>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    {galleries && galleries.length > 0 ? galleries.map((gallery: any, i: number) => (
-      <div class="card overflow-hidden group animate-fade-in-up" style={`animation-delay: ${i * 60}ms`}>
-        <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary-100 to-secondary-100">
-          {gallery.cover_image_url ? (
-            <img src={gallery.cover_image_url} alt={gallery.title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-          ) : (
-            <div class="w-full h-full flex flex-col items-center justify-center text-primary-400 gap-2">
-              <Icon name="image" class="w-10 h-10 opacity-40" />
-              <p class="text-xs text-primary-500 font-medium">Sin portada</p>
+  <div class="flex items-start gap-3 mb-5">
+    <div class="flex-1">
+      <AdminSearchFilter
+        placeholder="Buscar por nombre..."
+        currentValues={{ search }}
+        showExport={true}
+        exportLabel="Exportar CSV"
+      />
+    </div>
+    <div class="flex items-center gap-1 border border-gray-200 rounded-xl p-1 bg-white flex-shrink-0">
+      <a href={`?view=grid${search ? `&search=${search}` : ''}`} class={`p-2 rounded-lg transition-all ${view !== 'list' ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`} title="Cuadrícula">
+        <Icon name="layout-grid" class="w-4 h-4" />
+      </a>
+      <a href={`?view=list${search ? `&search=${search}` : ''}`} class={`p-2 rounded-lg transition-all ${view === 'list' ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`} title="Lista">
+        <Icon name="list" class="w-4 h-4" />
+      </a>
+    </div>
+  </div>
+
+  {view === 'list' ? (
+    <div class="card-admin overflow-hidden animate-fade-in-up">
+      <div class="overflow-x-auto">
+        <table class="w-full admin-table">
+          <thead>
+            <tr>
+              <th>Galería</th>
+              <th class="hidden sm:table-cell">Fotos</th>
+              <th class="hidden md:table-cell">Descripción</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {galleries && galleries.length > 0 ? galleries.map((gallery: any, i: number) => (
+              <tr class="animate-fade-in-up" style={`animation-delay: ${i * 40}ms`}>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-9 rounded-lg overflow-hidden bg-gradient-to-br from-primary-100 to-secondary-100 flex-shrink-0">
+                      {gallery.cover_image_url
+                        ? <img src={gallery.cover_image_url} alt={gallery.title} class="w-full h-full object-cover" />
+                        : <div class="w-full h-full flex items-center justify-center"><Icon name="image" class="w-4 h-4 text-primary-400 opacity-60" /></div>
+                      }
+                    </div>
+                    <p class="font-semibold text-gray-900 line-clamp-1">{gallery.title}</p>
+                  </div>
+                </td>
+                <td class="hidden sm:table-cell text-gray-500">
+                  <span class="flex items-center gap-1"><Icon name="images" class="w-3.5 h-3.5" />{Array.isArray(gallery.photos) ? gallery.photos[0]?.count || 0 : 0}</span>
+                </td>
+                <td class="hidden md:table-cell text-gray-500 text-sm"><p class="line-clamp-1">{gallery.description || '—'}</p></td>
+                <td class="text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    <a href={`/admin/galerias/${gallery.id}`} class="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar"><Icon name="pencil" class="w-4 h-4" /></a>
+                    <button class="delete-btn p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={gallery.id} data-title={gallery.title} title="Eliminar"><Icon name="trash-2" class="w-4 h-4" /></button>
+                  </div>
+                </td>
+              </tr>
+            )) : (
+              <tr><td colspan="4" class="py-20 text-center text-gray-400"><Icon name="image" class="w-12 h-12 opacity-30 mx-auto mb-3" /><p class="font-medium">No hay galerías</p></td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <Pagination total={total} limit={limit} currentPage={page} />
+    </div>
+  ) : (
+    <div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {galleries && galleries.length > 0 ? galleries.map((gallery: any, i: number) => (
+          <div class="card overflow-hidden group animate-fade-in-up" style={`animation-delay: ${i * 60}ms`}>
+            <div class="relative aspect-video overflow-hidden bg-gradient-to-br from-primary-100 to-secondary-100">
+              {gallery.cover_image_url
+                ? <img src={gallery.cover_image_url} alt={gallery.title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                : <div class="w-full h-full flex flex-col items-center justify-center text-primary-400 gap-2"><Icon name="image" class="w-10 h-10 opacity-40" /><p class="text-xs text-primary-500 font-medium">Sin portada</p></div>
+              }
             </div>
-          )}
-        </div>
-        <div class="p-4">
-          <h3 class="font-semibold text-gray-900 mb-1 line-clamp-1">{gallery.title}</h3>
-          {gallery.description && <p class="text-gray-500 text-xs line-clamp-2 mb-3">{gallery.description}</p>}
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-400 flex items-center gap-1">
-              <Icon name="images" class="w-3.5 h-3.5" />
-              {Array.isArray(gallery.photos) ? gallery.photos[0]?.count || 0 : 0} fotos
-            </span>
-            <div class="flex gap-1">
-              <a href={`/admin/galerias/${gallery.id}`} class="p-1.5 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
-                <Icon name="pencil" class="w-4 h-4" />
-              </a>
-              <button class="delete-btn p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={gallery.id} data-title={gallery.title} title="Eliminar">
-                <Icon name="trash-2" class="w-4 h-4" />
-              </button>
+            <div class="p-4">
+              <h3 class="font-semibold text-gray-900 mb-1 line-clamp-1">{gallery.title}</h3>
+              {gallery.description && <p class="text-gray-500 text-xs line-clamp-2 mb-3">{gallery.description}</p>}
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400 flex items-center gap-1">
+                  <Icon name="images" class="w-3.5 h-3.5" />
+                  {Array.isArray(gallery.photos) ? gallery.photos[0]?.count || 0 : 0} fotos
+                </span>
+                <div class="flex gap-1">
+                  <a href={`/admin/galerias/${gallery.id}`} class="p-1.5 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar"><Icon name="pencil" class="w-4 h-4" /></a>
+                  <button class="delete-btn p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" data-id={gallery.id} data-title={gallery.title} title="Eliminar"><Icon name="trash-2" class="w-4 h-4" /></button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )) : (
+          <div class="col-span-3 card p-20 text-center text-gray-400 animate-fade-in-up">
+            <Icon name="image" class="w-14 h-14 opacity-30 mx-auto mb-4" />
+            <p class="font-medium text-lg mb-4">No hay galerías aún</p>
+            <a href="/admin/galerias/nuevo" class="btn-primary inline-flex">Crear primera galería</a>
+          </div>
+        )}
       </div>
-    )) : (
-      <div class="col-span-3 card p-20 text-center text-gray-400 animate-fade-in-up">
-        <Icon name="image" class="w-14 h-14 opacity-30 mx-auto mb-4" />
-        <p class="font-medium text-lg mb-4">No hay galerías aún</p>
-        <a href="/admin/galerias/nuevo" class="btn-primary inline-flex">Crear primera galería</a>
-      </div>
-    )}
-  </div>
+      {total > limit && <div class="card-admin overflow-hidden mt-4"><Pagination total={total} limit={limit} currentPage={page} /></div>}
+    </div>
+  )}
 </AdminLayout>
 
 <script>

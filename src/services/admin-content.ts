@@ -167,3 +167,57 @@ export async function listAllStorageAssets(buckets: string[]) {
     return dateB - dateA;
   });
 }
+
+export async function getAdminEvents(options: { search?: string, status?: string, limit?: number, offset?: number } = {}) {
+  let query = adminSupabase()
+    .from('events')
+    .select('*', { count: 'exact' });
+  if (options.status) query = query.eq('status', options.status);
+  if (options.search) query = query.ilike('title', `%${options.search}%`);
+  const limit = options.limit ?? 20;
+  const offset = options.offset ?? 0;
+  const { data, count, error } = await query.order('event_date', { ascending: false }).range(offset, offset + limit - 1);
+  if (error) throw error;
+  return { data: data ?? [], total: count ?? 0 };
+}
+
+export async function getAdminDocuments(options: { search?: string, type?: string, limit?: number, offset?: number } = {}) {
+  let query = adminSupabase()
+    .from('documents')
+    .select('*', { count: 'exact' });
+  if (options.type) query = query.eq('type', options.type);
+  if (options.search) query = query.ilike('title', `%${options.search}%`);
+  const limit = options.limit ?? 20;
+  const offset = options.offset ?? 0;
+  const { data, count, error } = await query.order('published_at', { ascending: false }).range(offset, offset + limit - 1);
+  if (error) throw error;
+  return { data: data ?? [], total: count ?? 0 };
+}
+
+export async function getAdminGalleries(options: { search?: string, limit?: number, offset?: number } = {}) {
+  let query = adminSupabase()
+    .from('galleries')
+    .select('*, photos(count)', { count: 'exact' });
+  if (options.search) query = query.ilike('title', `%${options.search}%`);
+  const limit = options.limit ?? 20;
+  const offset = options.offset ?? 0;
+  const { data, count, error } = await query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+  if (error) throw error;
+  return { data: data ?? [], total: count ?? 0 };
+}
+
+export async function getAdminMessagesFiltered(options: { search?: string, status?: string, limit?: number, offset?: number } = {}) {
+  let query = adminSupabase()
+    .from('messages')
+    .select('*', { count: 'exact' });
+  if (options.status === 'unread') query = query.eq('is_read', false);
+  if (options.status === 'read') query = query.eq('is_read', true);
+  if (options.search) {
+    query = query.or(`name.ilike.%${options.search}%,email.ilike.%${options.search}%`);
+  }
+  const limit = options.limit ?? 20;
+  const offset = options.offset ?? 0;
+  const { data, count, error } = await query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+  if (error) throw error;
+  return { data: data ?? [], total: count ?? 0 };
+}
