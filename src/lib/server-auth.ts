@@ -34,7 +34,7 @@ export async function getAdminSessionFromToken(token: string) {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, email, full_name, role')
+    .select('id, email, full_name, role, avatar_url')
     .eq('id', user.id)
     .single();
 

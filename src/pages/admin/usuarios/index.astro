@@ -269,7 +269,7 @@ const roleConfig: Record<string, { label: string; color: string }> = {
     }
 
     const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
-    const objectPath = `avatars/${userId}/avatar-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const objectPath = `avatar-${userId}-${Date.now()}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from('blog-images')
@@ -327,6 +327,31 @@ const roleConfig: Record<string, { label: string; color: string }> = {
       } else {
         closeModal();
         (window as any).showToast('Usuario actualizado', 'success');
+
+        // Si el usuario editado es el usuario actual, actualizar el navbar inmediatamente
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && user.id === id) {
+          // Actualizar avatar en el navbar sin recargar
+          const navAvatar = document.getElementById('user-avatar');
+          const navName   = document.getElementById('user-name');
+          const navRole   = document.getElementById('user-role');
+
+          if (navName)  navName.textContent  = name || user.email?.split('@')[0] || 'Admin';
+          if (navRole) {
+            const roleMap: Record<string, string> = { admin: 'Administrador', editor: 'Editor', viewer: 'Visor' };
+            navRole.textContent = roleMap[role] ?? 'Administrador';
+          }
+          if (navAvatar && avatarUrl) {
+            navAvatar.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = avatarUrl;
+            img.alt = name;
+            img.className = 'w-full h-full object-cover rounded-lg';
+            img.onerror = () => { navAvatar.textContent = (name || 'A')[0].toUpperCase(); };
+            navAvatar.appendChild(img);
+          }
+        }
+
         setTimeout(() => location.reload(), 900);
       }
     } catch (err: any) {

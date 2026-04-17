@@ -48,37 +48,6 @@ const youtubeEmbedUrl = toYoutubeEmbedUrl(settings.youtube);
       </div>
     </div>
 
-    <!-- Mi perfil -->
-    <div class="card-admin p-6 animate-fade-in-up">
-      <div class="flex items-center gap-2 mb-5">
-        <Icon name="user" class="w-5 h-5 text-primary-600" />
-        <h3 class="font-heading font-bold text-lg text-gray-900">Mi Perfil</h3>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-6 items-start">
-        <div class="w-full sm:w-48">
-          <label class="label mb-2">Foto de perfil</label>
-          <ImageUploader 
-            fieldId="profile_avatar_url" 
-            bucket="logos" 
-            label="" 
-            currentUrl={Astro.locals.adminProfile?.avatar_url || ''} 
-            showAiGen={false} 
-            allowExternalUrl={true} 
-          />
-        </div>
-        <div class="flex-1 space-y-4 w-full">
-          <div>
-            <label class="label" for="profile_full_name">Nombre completo</label>
-            <input type="text" id="profile_full_name" class="input" placeholder="Tu nombre" value={Astro.locals.adminProfile?.full_name || ''} />
-          </div>
-          <button id="save-profile-btn" class="btn-primary justify-center py-2.5 text-sm gap-2">
-            <Icon name="save" class="w-4 h-4" />
-            Guardar perfil
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Información institucional -->
     <div class="card-admin p-6 animate-fade-in-up">
       <div class="flex items-center gap-2 mb-5">
@@ -268,28 +237,6 @@ const youtubeEmbedUrl = toYoutubeEmbedUrl(settings.youtube);
 
   youtubeInput?.addEventListener('input', refreshYoutubePreview);
   refreshYoutubePreview();
-
-  // Perfil inicializado desde el servidor (Astro.locals)
-
-  document.getElementById('save-profile-btn')?.addEventListener('click', async () => {
-    const full_name = (document.getElementById('profile_full_name') as HTMLInputElement)?.value || '';
-    const avatar_url = (document.getElementById('profile_avatar_url') as HTMLInputElement)?.value || '';
-    (window as any).showLoading('Guardando perfil...');
-    try {
-      const res = await fetch('/api/admin/update-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ full_name, avatar_url }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      (window as any).closeLoading();
-      (window as any).showToast('Perfil guardado correctamente', 'success');
-    } catch (e: any) {
-      (window as any).closeLoading();
-      (window as any).showError('Error al guardar perfil', e.message);
-    }
-  });
 
   document.getElementById('save-settings-btn')?.addEventListener('click', async () => {
     const get = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement)?.value || null;
